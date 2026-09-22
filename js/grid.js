@@ -15,6 +15,7 @@ arcade.minesweeper.grid.prototype.tiles;
 arcade.minesweeper.grid.prototype.tile_tds;
 arcade.minesweeper.grid.prototype.width;
 arcade.minesweeper.grid.prototype.height;
+arcade.minesweeper.grid.prototype.number_mines;
 arcade.minesweeper.grid.prototype.grid_area;
 arcade.minesweeper.grid.prototype.seed;
 arcade.minesweeper.grid.prototype.right_mouse_down = false;
@@ -26,6 +27,7 @@ arcade.minesweeper.grid.prototype.generate = function(number_mines, seed) {
 
   var self = this;
 
+	this.number_mines = number_mines;
 	var number_tiles = this.width * this.height;
 
 	var i = number_mines;
@@ -128,6 +130,28 @@ arcade.minesweeper.grid.prototype.reveal_area = function(x, y) {
     }
   }
 
+  this.check_win();
+}
+
+// The game is won once only the mines are still covered. Windows Minesweeper
+// then finishes the board by flagging the remaining mines, showing the
+// sunglasses face and stopping the timer.
+arcade.minesweeper.grid.prototype.check_win = function() {
+  var covered = [];
+  for(var y = 0; y < this.height; y++) {
+    for(var x = 0; x < this.width; x++) {
+      if(!this.tiles[x][y].is_revealed()) covered.push(this.tiles[x][y]);
+    }
+  }
+  if(covered.length !== this.number_mines) return false;
+
+  for(var i = 0; i < covered.length; i++) {
+    if(covered[i].is_a_mine() && covered[i].get_state() !== "flag") covered[i].set_state("flag");
+  }
+  this.minesweeper.mine_counter.set_value(0);
+  this.face.set_state("sunglasses");
+  this.minesweeper.stop_timer();
+  return true;
 }
 
 arcade.minesweeper.grid.prototype.reveal_grid = function(starting_tile) {
@@ -138,6 +162,10 @@ arcade.minesweeper.grid.prototype.reveal_grid = function(starting_tile) {
       if(this.tiles[x][y] !== starting_tile) this.tiles[x][y].reveal(true);
 		}
 	}
+
+  // A mine went off: the game is over.
+  this.face.set_state("dead");
+  this.minesweeper.stop_timer();
 
   var surrounding_tiles = self.get_surrounding_tiles(x, y);
   surrounding_tiles = this.shuffle_array(surrounding_tiles);

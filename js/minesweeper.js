@@ -122,13 +122,22 @@ arcade.minesweeper.prototype.new_game = function(width, height, number_mines) {
   this.mine_counter = new arcade.minesweeper.ssd(this.header_td_mine_count, number_mines)
   var timer = new arcade.minesweeper.ssd(this.header_td_timer, 0);
 
-  setInterval(function() { timer.increment(); }, 1000);
+  // Replace the previous game's interval; without this, every new_game
+  // leaks one that keeps ticking forever.
+  this.stop_timer();
+  this.timer_interval = setInterval(function() { timer.increment(); }, 1000);
 
 	this.grid = new arcade.minesweeper.grid(this, this.grid_area, width, height, face);
 	this.grid.generate(number_mines);
 }
 arcade.minesweeper.prototype.restart = function() {
   this.new_game(this.width, this.height, this.number_mines);
+}
+arcade.minesweeper.prototype.stop_timer = function() {
+  if(this.timer_interval) {
+    clearInterval(this.timer_interval);
+    this.timer_interval = null;
+  }
 }
 
 $.ready(function() {

@@ -12,6 +12,7 @@
 <script type="text/javascript" src="js/ssd.js"></script>
 <script type="text/javascript" src="js/automation.js"></script>
 <script type="text/javascript" src="js/jev-panel.js"></script>
+<script type="text/javascript" src="js/fit-board.js"></script>
 <link rel="stylesheet" href="css/minesweeper.css">
 </head>
 <body>
@@ -25,8 +26,9 @@
     </div>
     <div id="play_area"></div>
   </section>
-  <aside id="jev_panel" aria-label="Jev 调试面板">
-    <h2>Jev 请求与返回</h2>
+  <aside id="jev_panel" aria-label="模型调试面板">
+    <h2>模型请求与返回</h2>
+    <p id="jev_provider">决策方：等待自动化运行…</p>
     <p id="jev_status">等待自动化运行。密钥不会显示在页面中。</p>
     <div id="jev_log" aria-live="polite"></div>
   </aside>

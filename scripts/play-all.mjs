@@ -66,6 +66,7 @@ const transcriptPath = join(resultDir, `jev-${runStartedAt.toISOString().replace
 const transcript = { mode: isVerify ? "verify" : null, provider: null, startedAt: runStartedAt.toISOString(), entries: [] };
 
 let provider = null;
+let providerModel = null;
 if (!isVerify) {
   const config = loadLlmConfig(configPath);
   const providerName = (providerArgument || config.defaultProvider || "jev").toLowerCase();
@@ -82,9 +83,10 @@ if (!isVerify) {
     if (!configApiKey) throw new Error(`OpenAI 兼容接口需要密钥：在 config/providers.yaml 的 openai.api_key 填写，或设置环境变量 ${config.openai.apiKeyEnv}。`);
     provider = createOpenAIProvider({ ...config.openai, apiKey: configApiKey, postJson });
   }
+  providerModel = providerName === "jev" ? config.jev.model : config.openai.model;
   transcript.mode = providerName;
   transcript.provider = provider.name;
-  console.log(`决策提供方：${provider.name}（模型 ${providerName === "jev" ? config.jev.model : config.openai.model}）。`);
+  console.log(`决策提供方：${provider.name}（模型 ${providerModel}）。`);
 }
 
 function cli(command, ...args) {
@@ -260,6 +262,8 @@ async function playLevel(level) {
     const panelReadStarted = performance.now();
     currentBoard = readBoardAndRenderPanel({
       status: `第 1 步：安全开局，直接点击中心格 (${move.x}, ${move.y})。`,
+      provider: provider.name,
+      model: providerModel,
       request: {
         source: "本地安全开局",
         action: "直接点击中心格；不发送模型请求",
@@ -315,6 +319,8 @@ async function playLevel(level) {
     const chooserLabel = move.source === "single-candidate" ? "唯一候选直选" : `${provider.name}（${move.model}）`;
     const afterClick = readBoardAndRenderPanel({
       status: `第 ${step + 1} 步：${chooserLabel} 选择 (${move.x}, ${move.y})，置信度 ${move.answer.confidence ?? "未知"}。`,
+      provider: provider.name,
+      model: move.source === "single-candidate" ? providerModel : (move.model || providerModel),
       request: move.request,
       response: move.response,
       timings

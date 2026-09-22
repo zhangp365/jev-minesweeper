@@ -11,9 +11,16 @@
   window.jevPanel = {
     update: function (entry) {
       var status = document.getElementById("jev_status");
+      var provider = document.getElementById("jev_provider");
       var log = document.getElementById("jev_log");
       if (!log) return;
-      if (status) status.textContent = entry.status || "已收到 Jev 返回。";
+      if (provider && entry.provider) {
+        var label = entry.provider === "jev" ? "Jev"
+          : entry.provider === "openai" ? "OpenAI 兼容"
+          : entry.provider;
+        provider.textContent = "决策方：" + label + "（模型 " + (entry.model || "未知") + "）";
+      }
+      if (status) status.textContent = entry.status || "已收到模型返回。";
 
       var section = document.createElement("section");
       section.className = "jev_entry";

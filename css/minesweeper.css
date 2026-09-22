@@ -1,4 +1,9 @@
+html, body {
+  height: 100%;
+}
+
 body {
+  box-sizing: border-box;
   margin: 0;
   padding: 24px;
   background-color: #bdbdbd;
@@ -6,21 +11,32 @@ body {
 }
 
 #play_area {
-  margin: 24px auto 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: auto;
+}
+
+#play_area table {
+  image-rendering: pixelated;
 }
 
 #workspace {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 24px;
   max-width: 1280px;
+  height: calc(100vh - 48px);
   margin: 0 auto;
 }
 
 #game_panel {
   flex: 1 1 auto;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   text-align: center;
 }
 
@@ -35,12 +51,21 @@ body {
 #jev_panel {
   box-sizing: border-box;
   flex: 0 0 420px;
-  max-height: calc(100vh - 48px);
+  max-height: 100%;
   overflow: auto;
   padding: 16px;
   background: #ece9d8;
   border: 2px outset #fff;
   text-align: left;
+}
+
+#jev_provider {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  background: #d4d0c8;
+  border: 1px inset #808080;
+  font-weight: bold;
+  font-size: 13px;
 }
 
 #jev_panel h2, #jev_panel h3 {
@@ -92,7 +117,8 @@ body {
 }
 
 @media (max-width: 920px) {
-  #workspace { flex-direction: column; }
+  #workspace { flex-direction: column; height: auto; }
   #game_panel, #jev_panel { width: 100%; }
   #jev_panel { flex-basis: auto; max-height: none; }
+  #play_area { min-height: 320px; }
 }

@@ -1,0 +1,9 @@
+{
+  "name": "minesweeper-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Windows XP style Minesweeper with a Playwright CLI + Jev automation bridge.",
+  "dependencies": {
+    "undici": "^8.11.0"
+  }
+}

@@ -1,0 +1,22 @@
+# LLM 决策提供方配置（模板）。
+# 使用：复制本文件为 config/providers.yaml 并填写；providers.yaml 已被 .gitignore 忽略，避免密钥入库。
+# 命令行 --provider jev|openai 的优先级高于这里的 default_provider。
+
+default_provider: jev        # jev | openai
+
+jev:                         # Jev choice 接口（密钥推荐走环境变量）
+  endpoint: https://api.typesafe.ai/v1/systemone
+  model: jev-latest
+  # api_key: 留空则依次读取环境变量 TYPESAFE_API_KEY / JEV_API_KEY（含 Windows 机器级变量）
+
+openai:                      # 任意 OpenAI 兼容接口（OpenAI / vLLM / one-api 等）
+  base_url: https://api.openai.com/v1
+  model: gpt-4o-mini
+  api_key: sk-在这里填写你的key
+  # api_key_env: OPENAI_API_KEY   # 也可改为从环境变量读取（yaml 里留空 api_key 时生效）
+  temperature: 0
+  json_mode: true            # 请求带 response_format: json_object；兼容端点不支持时设为 false
+
+request:
+  attempts: 3                # 网络失败重试次数（环境变量 JEV_REQUEST_ATTEMPTS 优先）
+  proxy: ""                  # 留空则自动读取 JEV_PROXY / HTTPS_PROXY / HTTP_PROXY；也可显式指定，如 http://127.0.0.1:7890

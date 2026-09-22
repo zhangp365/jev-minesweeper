@@ -4,6 +4,7 @@
   "private": true,
   "description": "Windows XP style Minesweeper with a Playwright CLI + Jev automation bridge.",
   "dependencies": {
-    "undici": "^8.11.0"
+    "undici": "^8.11.0",
+    "yaml": "^2.9.1"
   }
 }

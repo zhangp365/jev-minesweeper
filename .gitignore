@@ -2,3 +2,4 @@
 .playwright-profile/
 result/
 node_modules/
+config/providers.yaml

@@ -133,6 +133,8 @@ arcade.minesweeper.prototype.restart = function() {
 
 $.ready(function() {
   var minesweeper = new arcade.minesweeper($("#play_area"));
+  // Kept public for the automation bridge. Normal gameplay does not use it.
+  window.minesweeperGame = minesweeper;
   minesweeper.new_game(16, 16, 40);
 
   $("#button_beginner").addEventListener("click", function() {
@@ -147,8 +149,13 @@ $.ready(function() {
 
   $(document)
     .addEventListener("mousedown", function(e) {
-      if(e.which == 1) minesweeper.mouse.left = true;
-      else if(e.which == 3) minesweeper.mouse.right = true;
+      // Playwright's synthetic mouse events set `button`; older browsers set
+      // `which`. Supporting both keeps normal mouse play unchanged and makes
+      // the DOM board safely automatable through real click events.
+      var left_button = e.which == 1 || e.button === 0;
+      var right_button = e.which == 3 || e.button === 2;
+      if(left_button) minesweeper.mouse.left = true;
+      else if(right_button) minesweeper.mouse.right = true;
       if(e.target.nodeName !== "TD") return false;
 
       var tile = minesweeper.grid.get_tile_from_td(e.target);
@@ -183,9 +190,11 @@ $.ready(function() {
       }
     })
     .addEventListener("mouseup", function(e) {
+      var left_button = e.which == 1 || e.button === 0;
+      var right_button = e.which == 3 || e.button === 2;
       if(e.target.nodeName !== "TD") {
-        if(e.which == 1) minesweeper.mouse.left = false;
-        else if(e.which == 3) minesweeper.mouse.right = false;
+        if(left_button) minesweeper.mouse.left = false;
+        else if(right_button) minesweeper.mouse.right = false;
         return false;
       }
       // If I am releasing the left mouse button OR if both mouse buttons were down and I released either one of them
@@ -193,8 +202,8 @@ $.ready(function() {
         var click_coordinates = minesweeper.grid.get_coordinates_from_td(e.target);
 
         if(click_coordinates.x === -1 || click_coordinates.y === -1) {
-          if(e.which == 1) minesweeper.mouse.left = false;
-          else if(e.which == 3) minesweeper.mouse.right = false;
+          if(left_button) minesweeper.mouse.left = false;
+          else if(right_button) minesweeper.mouse.right = false;
           return false;
         }
 
@@ -228,8 +237,8 @@ $.ready(function() {
         // Clear highlighted tile array
         minesweeper.grid.highlighted_tiles = [];
       }
-      if(e.which == 1) minesweeper.mouse.left = false;
-      else if(e.which == 3) minesweeper.mouse.right = false;
+      if(left_button) minesweeper.mouse.left = false;
+      else if(right_button) minesweeper.mouse.right = false;
     })
     .addEventListener("keydown", function() {
 

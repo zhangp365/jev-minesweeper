@@ -1,9 +1,98 @@
 body {
   margin: 0;
-  padding: 0;
+  padding: 24px;
   background-color: #bdbdbd;
+  font-family: Tahoma, "Microsoft YaHei UI", "Microsoft YaHei", SimSun, Arial, sans-serif;
 }
 
 #play_area {
-  margin: auto;
+  margin: 24px auto 0;
+  overflow: auto;
+}
+
+#workspace {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+#game_panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+#game_panel h1 {
+  margin: 0 0 16px;
+}
+
+#level_buttons button {
+  width: 108px;
+}
+
+#jev_panel {
+  box-sizing: border-box;
+  flex: 0 0 420px;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 16px;
+  background: #ece9d8;
+  border: 2px outset #fff;
+  text-align: left;
+}
+
+#jev_panel h2, #jev_panel h3 {
+  margin: 0 0 8px;
+}
+
+#jev_panel h3 {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+#jev_status {
+  margin: 0;
+  color: #333;
+  font-size: 13px;
+}
+
+#jev_log {
+  margin-top: 16px;
+}
+
+.jev_entry {
+  margin-top: 12px;
+  padding: 10px;
+  background: #d4d0c8;
+  border: 1px solid #808080;
+}
+
+.jev_entry:first-child {
+  margin-top: 0;
+}
+
+.jev_entry h3 {
+  margin-top: 0;
+}
+
+.jev_entry pre {
+  box-sizing: border-box;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #808080;
+  color: #222;
+  font: 12px/1.4 Consolas, "Microsoft YaHei UI", "Microsoft YaHei", SimSun, "Courier New", monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 920px) {
+  #workspace { flex-direction: column; }
+  #game_panel, #jev_panel { width: 100%; }
+  #jev_panel { flex-basis: auto; max-height: none; }
 }

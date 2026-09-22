@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Minesweeper</title>
 <script type="text/javascript" src="js/rocket.12.06.js"></script>
 <script type="text/javascript" src="js/seedrandom.js"></script>
@@ -9,24 +10,26 @@
 <script type="text/javascript" src="js/face.js"></script>
 <script type="text/javascript" src="js/grid.js"></script>
 <script type="text/javascript" src="js/ssd.js"></script>
+<script type="text/javascript" src="js/automation.js"></script>
+<script type="text/javascript" src="js/jev-panel.js"></script>
 <link rel="stylesheet" href="css/minesweeper.css">
 </head>
 <body>
-<table cellpadding="0" cellspacing="0" style="width: 100%;">
-  <tr>
-    <td style="text-align: center;"><h1>Minesweeper</h1></td>
-  </tr>
-  <tr>
-    <td style="padding-bottom: 25px; text-align: center;">
-      <button style="width: 100px;" id="button_beginner">Beginner</button> <button style="width: 100px;" id="button_intermediate">Intermediate</button> <button style="width: 100px;" id="button_expert">Expert</button>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div id="play_area"></div>
-    </td>
-  </tr>
-</table>
-</table>
+<main id="workspace">
+  <section id="game_panel">
+    <h1>Minesweeper</h1>
+    <div id="level_buttons">
+      <button id="button_beginner">Beginner</button>
+      <button id="button_intermediate">Intermediate</button>
+      <button id="button_expert">Expert</button>
+    </div>
+    <div id="play_area"></div>
+  </section>
+  <aside id="jev_panel" aria-label="Jev 调试面板">
+    <h2>Jev 请求与返回</h2>
+    <p id="jev_status">等待自动化运行。密钥不会显示在页面中。</p>
+    <div id="jev_log" aria-live="polite"></div>
+  </aside>
+</main>
 </body>
 </html>

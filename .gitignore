@@ -1,0 +1,4 @@
+.playwright-cli/
+.playwright-profile/
+result/
+node_modules/

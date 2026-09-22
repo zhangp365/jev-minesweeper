@@ -20,6 +20,7 @@ arcade.minesweeper.grid.prototype.seed;
 arcade.minesweeper.grid.prototype.right_mouse_down = false;
 arcade.minesweeper.grid.prototype.highlighted_tiles = [];
 arcade.minesweeper.grid.prototype.face;
+arcade.minesweeper.grid.prototype.first_reveal = true;
 
 arcade.minesweeper.grid.prototype.generate = function(number_mines, seed) {
 
@@ -85,6 +86,26 @@ arcade.minesweeper.grid.prototype.generate = function(number_mines, seed) {
 arcade.minesweeper.grid.prototype.reveal_area = function(x, y) {
   var self = this;
 
+  // Windows Minesweeper convention: the first reveal is always playable.
+  // This is particularly important for an AI agent, which has no information
+  // to distinguish one covered cell from another before its opening move.
+  if(this.first_reveal && this.tiles[x][y].get_state() !== "flag") {
+    this.first_reveal = false;
+    if(this.tiles[x][y].is_a_mine()) {
+      for(var safe_y = 0; safe_y < this.height; safe_y++) {
+        for(var safe_x = 0; safe_x < this.width; safe_x++) {
+          if(!this.tiles[safe_x][safe_y].is_a_mine()) {
+            this.tiles[x][y].is_a_mine_ = false;
+            this.tiles[safe_x][safe_y].is_a_mine_ = true;
+            this.detect_mines();
+            safe_x = this.width;
+            safe_y = this.height;
+          }
+        }
+      }
+    }
+  }
+
   var result = this.tiles[x][y].reveal(false);
   if(result === "flag") return false;
   else if(result === "mine") {
@@ -140,7 +161,14 @@ arcade.minesweeper.grid.prototype.get_coordinates_from_td = function(td) {
 // Generate a list of tile tds so I can do the entire grid with one event handler. I need the tds to figure out the tile I clicked on
 arcade.minesweeper.grid.prototype.generate_tile_td_list = function() {
   for(var i in this.tiles) {
-    this.tile_tds.push(this.tiles[i].get_element());
+    var tile_element = this.tiles[i].get_element();
+    var x = Math.floor(i / this.height);
+    var y = i % this.height;
+    tile_element.id = "cell-" + x + "-" + y;
+    tile_element.setAttribute("data-cell", x + "," + y);
+    tile_element.setAttribute("data-x", x);
+    tile_element.setAttribute("data-y", y);
+    this.tile_tds.push(tile_element);
   }
 }
 

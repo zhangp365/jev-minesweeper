@@ -283,13 +283,34 @@ async function playLevel(level) {
       currentBoard = readJson("window.getJevBoardState()");
       boardReadMs = Math.round(performance.now() - boardReadStarted);
     }
-    const board = currentBoard;
+    let board = currentBoard;
     if (board.cleared || board.exploded) break;
+    // Deterministic bookkeeping before every model turn: flag the mines that
+    // number constraints force. Flagging can satisfy further numbers, so
+    // re-read and re-rank until no new forced mine shows up.
+    const autoFlagStarted = performance.now();
+    const autoFlagged = [];
+    for (let pass = 0; pass < 3; pass++) {
+      const { knownMines } = rankedCandidates(board, candidateLimit);
+      const unflagged = [...knownMines].filter((key) => {
+        const [x, y] = key.split(",").map(Number);
+        return board.rows[y][x] === "#";
+      });
+      if (!unflagged.length) break;
+      for (const key of unflagged) {
+        const [x, y] = key.split(",").map(Number);
+        cli("click", `td#cell-${x}-${y}`, "right");
+        autoFlagged.push(key);
+      }
+      board = readJson("window.getJevBoardState()");
+    }
+    currentBoard = board;
+    const autoFlagMs = Math.round(performance.now() - autoFlagStarted);
     const move = await chooseMove(board, level, step);
     const clickStarted = performance.now();
     cli("click", `td#cell-${move.x}-${move.y}`);
     const clickMs = Math.round(performance.now() - clickStarted);
-    const timings = { boardReadMs, modelRequestMs: move.requestMs, playwrightClickMs: clickMs };
+    const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, playwrightClickMs: clickMs };
     const panelReadStarted = performance.now();
     const chooserLabel = move.source === "single-candidate" ? "唯一候选直选" : `${provider.name}（${move.model}）`;
     const afterClick = readBoardAndRenderPanel({
@@ -306,13 +327,14 @@ async function playLevel(level) {
       throw new Error(`Playwright click at (${move.x},${move.y}) did not change the board`);
     }
     currentBoard = afterClick;
-    moves.push({ step: step + 1, source: move.source || provider.name, provider: move.source === "single-candidate" ? "local" : provider.name, x: move.x, y: move.y, confidence: move.answer.confidence, usage: move.usage, model: move.model, timings });
+    moves.push({ step: step + 1, source: move.source || provider.name, provider: move.source === "single-candidate" ? "local" : provider.name, x: move.x, y: move.y, confidence: move.answer.confidence, usage: move.usage, model: move.model, autoFlagged: autoFlagged.length || undefined, timings });
     transcript.entries.push({
       level: level.name,
       step: step + 1,
       provider: move.source === "single-candidate" ? "local" : provider.name,
       request: move.request,
       response: move.response,
+      autoFlagged: autoFlagged.length ? autoFlagged : undefined,
       timings
     });
     await saveTranscript();

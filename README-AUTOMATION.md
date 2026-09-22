@@ -42,7 +42,9 @@ node scripts/play-all.mjs --provider openai --level beginner   # OpenAI 兼容�
 node scripts/play-all.mjs --level beginner                     # 用 yaml 里的 default_provider
 ```
 
-默认每局最多执行 5 步：第 1 步是不用模型请求的中心安全开局，后续最多 4 步由模型选择，便于先核验调用链与成本。确认后再提高上限（`JEV_MAX_STEPS`）。候选数用 `JEV_CANDIDATE_LIMIT` 控制，默认 12：候选仅由玩家可见数字做风险排序，确定安全格优先；每个候选都附带周围 8 格的数字（`(x,y)=数字` 形式）与已确认是雷的邻格（插旗 `F`，或由数字约束必然推出）——Jev 放在 `criteria` 中，OpenAI 放在提示词的候选清单里。
+默认每局最多执行 5 步：第 1 步是不用模型请求的中心安全开局，后续最多 4 步由模型选择，便于先核验调用链与成本。确认后再提高上限（`JEV_MAX_STEPS`）。候选数用 `JEV_CANDIDATE_LIMIT` 控制，默认 12：候选仅由玩家可见数字做风险排序，确定安全格优先；每个候选都附带统一格式的描述——周围 8 格的数字（`(x,y)=数字` 形式）、已确认是雷的邻格（插旗 `F` 或由数字约束必然推出）、按可见约束估算的踩雷概率 `risk≈x`，以及 PROVEN SAFE（由数字约束证明无雷）标记——Jev 放在 `criteria` 中，OpenAI 放在提示词的候选清单里，两边信息完全对等。
+
+每步模型落子前，主循环会先用右键自动给由数字约束推出的确定雷插旗并重读棋盘（插旗可能满足更多数字约束，会循环到不再出现新的确定雷），因此模型总能基于最新棋盘和准确的剩余雷数推理；这些插旗记录在 transcript 的 `autoFlagged` 中。
 
 候选合法性（只能选候选列表中的格子）与置信度下限（`JEV_MIN_CONFIDENCE`）在主流程统一校验，与 provider 无关。
 

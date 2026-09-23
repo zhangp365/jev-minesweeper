@@ -50,7 +50,7 @@ node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟
 JEV_MAX_STEPS=800            # 模型步数上限，默认打完整局
 JEV_MIN_CONFIDENCE=0.2      # 置信度下限，低于即终止
 JEV_CANDIDATE_LIMIT=12      # 每步交给模型的候选数
-JEV_REVIEW_MS=60000         # 结束后保留浏览器的时间，0 立即关闭
+JEV_REVIEW_MS=0             # 等待 Replay 直到手动关闭浏览器；正数可限制等待时长
 ```
 
 ## 输出

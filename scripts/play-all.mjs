@@ -28,6 +28,7 @@ const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const artifacts = join(root, "artifacts");
 const resultDir = join(root, "result");
 const configPath = join(root, "config", "providers.yaml");
+const playwrightConfigPath = join(root, ".playwright", "cli.config.json");
 const port = Number(process.env.MINESWEEPER_PORT || 4173);
 const session = "minesweeper-three-levels";
 const playwrightCliEntrypoint = process.platform === "win32" && process.env.APPDATA
@@ -45,7 +46,9 @@ const providerArgument = providerFromArgv();
 const maxSteps = Number(process.env.JEV_MAX_STEPS || 999);
 const confidenceFloor = Number(process.env.JEV_MIN_CONFIDENCE || 0);
 const candidateLimit = Number(process.env.JEV_CANDIDATE_LIMIT || 12);
-const reviewMs = Math.max(0, Number(process.env.JEV_REVIEW_MS || 60_000));
+// Keep the browser open until the user closes it. Set JEV_REVIEW_MS to a
+// positive value only when an automatic review timeout is wanted.
+const reviewMs = Math.max(0, Number(process.env.JEV_REVIEW_MS || 0));
 const runStartedAt = new Date();
 
 function providerFromArgv() {
@@ -75,7 +78,7 @@ if (!isVerify) {
   const config = loadLlmConfig(configPath);
   const providerName = (providerArgument || config.defaultProvider || "jev").toLowerCase();
   if (!PROVIDER_NAMES.includes(providerName)) {
-    throw new Error(`未知 provider：${providerName}（可选：${PROVIDER_NAMES.join("、")}）`);
+    throw new Error(`Unknown provider: ${providerName} (choose from ${PROVIDER_NAMES.join(", ")})`);
   }
   const postJson = await createJsonPoster({ proxyUrl: config.request.proxyUrl, attempts: config.request.attempts });
   // Create every usable provider: the page dropdown offers all of them, and
@@ -83,26 +86,26 @@ if (!isVerify) {
   const jevApiKey = resolveJevApiKey(config.jev.apiKey);
   if (jevApiKey) {
     providers.jev = createJevProvider({ ...config.jev, apiKey: jevApiKey, postJson });
-    providerOptions.push({ id: "jev", label: `Jev（模型 ${config.jev.model}）` });
+    providerOptions.push({ id: "jev", label: `Jev (model ${config.jev.model})` });
   } else {
-    console.log("未找到 Jev 密钥，跳过 jev 决策方。");
+    console.log("Jev API key not found; skipping the Jev provider.");
   }
   const openaiApiKey = config.openai.apiKey || process.env[config.openai.apiKeyEnv];
   if (openaiApiKey) {
     providers.openai = createOpenAIProvider({ ...config.openai, apiKey: openaiApiKey, postJson });
-    providerOptions.push({ id: "openai", label: `OpenAI 兼容（模型 ${config.openai.model}）` });
+    providerOptions.push({ id: "openai", label: `OpenAI-compatible (model ${config.openai.model})` });
   } else {
-    console.log("未找到 OpenAI 兼容密钥，跳过 openai 决策方。");
+    console.log("OpenAI-compatible API key not found; skipping the OpenAI-compatible provider.");
   }
   provider = providers[providerName];
   if (!provider) {
-    throw new Error(`决策方 ${providerName} 不可用（缺少密钥或配置）。当前可用：${Object.keys(providers).join("、") || "无"}`);
+    throw new Error(`Provider ${providerName} is unavailable (missing key or configuration). Available: ${Object.keys(providers).join(", ") || "none"}`);
   }
   providerModels = { jev: config.jev.model, openai: config.openai.model };
   providerModel = providerModels[providerName];
   transcript.mode = providerName;
   transcript.provider = provider.name;
-  console.log(`决策提供方：${provider.name}（模型 ${providerModel}）。`);
+  console.log(`Provider: ${provider.name} (model ${providerModel}).`);
 }
 
 function cli(command, ...args) {
@@ -133,7 +136,7 @@ function cli(command, ...args) {
 }
 
 function openBrowser(url) {
-  const args = [url, "--browser", "chrome", "--headed", "--persistent", "--profile", join(root, ".playwright-profile")];
+  const args = [url, "--config", playwrightConfigPath, "--browser", "chrome", "--headed", "--persistent", "--profile", join(root, ".playwright-profile")];
   if (process.platform === "win32" && playwrightCliEntrypoint && existsSync(playwrightCliEntrypoint)) {
     try {
       execFileSync(process.execPath, [playwrightCliEntrypoint, `-s=${session}`, "open", ...args], {
@@ -177,7 +180,7 @@ async function waitForBrowser() {
   let lastError;
   for (let attempt = 0; attempt < 30; attempt++) {
     try {
-      cli("resize", "1280", "820");
+      cli("eval", "() => document.readyState");
       return;
     } catch (error) {
       lastError = error;
@@ -240,8 +243,8 @@ function forcedCandidateMove(candidate) {
     answer: { choice: `${candidate.x},${candidate.y}`, confidence: 1 },
     usage: null,
     model: "local",
-    request: { source: "本地规则", action: "只剩一个合法候选，直接点击，未发送模型请求", choice: { x: candidate.x, y: candidate.y } },
-    response: { result: "本地直选，无需判断" },
+    request: { source: "Local rule", action: "Only one legal candidate remains; clicked locally without a model request", choice: { x: candidate.x, y: candidate.y } },
+    response: { result: "Local forced choice; no model judgment was needed" },
     requestMs: 0
   };
 }
@@ -255,10 +258,10 @@ async function chooseMove(board, level, step) {
     ? forcedCandidateMove(candidates[0])
     : await provider.choose({ board, candidates, knownMines, level, step });
   if (!candidates.some((cell) => cell.x === move.x && cell.y === move.y)) {
-    throw new Error(`${provider.name} 返回了候选之外的格子 (${move.x},${move.y})`);
+    throw new Error(`${provider.name} returned a cell outside the candidate list (${move.x},${move.y})`);
   }
   if (Number(move.answer.confidence ?? 1) < confidenceFloor) {
-    throw new Error(`${provider.name} 置信度 ${move.answer.confidence} 低于 JEV_MIN_CONFIDENCE=${confidenceFloor}`);
+    throw new Error(`${provider.name} confidence ${move.answer.confidence} is below JEV_MIN_CONFIDENCE=${confidenceFloor}`);
   }
   return move;
 }
@@ -294,16 +297,16 @@ async function playLevel(level) {
     const timings = { boardReadMs, modelRequestMs: 0, playwrightClickMs: clickMs };
     const panelReadStarted = performance.now();
     currentBoard = readBoardAndRenderPanel({
-      status: `第 1 步：安全开局，直接点击中心格 (${move.x}, ${move.y})。`,
+      status: `Step 1: safe opening; clicked the center cell (${move.x}, ${move.y}).`,
       provider: provider.name,
       model: providerModel,
       request: {
-        source: "本地安全开局",
-        action: "直接点击中心格；不发送模型请求",
+        source: "Local safe opening",
+        action: "Clicked the center cell; no model request was sent",
         choice: move
       },
       response: {
-        result: "扫雷首点保护已启用：若该格原本有雷，游戏会在翻开前移动该雷。"
+        result: "First-click protection is enabled: if the cell contained a mine, the game moved it before revealing the cell."
       },
       timings
     });
@@ -349,9 +352,9 @@ async function playLevel(level) {
     const clickMs = Math.round(performance.now() - clickStarted);
     const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, playwrightClickMs: clickMs };
     const panelReadStarted = performance.now();
-    const chooserLabel = move.source === "single-candidate" ? "唯一候选直选" : `${provider.name}（${move.model}）`;
+    const chooserLabel = move.source === "single-candidate" ? "local forced choice" : `${provider.name} (${move.model})`;
     const afterClick = readBoardAndRenderPanel({
-      status: `第 ${step + 1} 步：${chooserLabel} 选择 (${move.x}, ${move.y})，置信度 ${move.answer.confidence ?? "未知"}。`,
+      status: `Step ${step + 1}: ${chooserLabel} selected (${move.x}, ${move.y}), confidence ${move.answer.confidence ?? "unknown"}.`,
       provider: provider.name,
       model: move.source === "single-candidate" ? providerModel : (move.model || providerModel),
       request: move.request,
@@ -382,13 +385,14 @@ async function playLevel(level) {
   return { level: level.name, mode: transcript.mode, provider: provider.name, moves, elapsedMs: Math.round(performance.now() - started), cleared: result.cleared, exploded: result.exploded, stepLimitReached: !result.cleared && !result.exploded && moves.length === maxSteps };
 }
 
-// Review window between games: poll the page for the 重跑 button and the
+// Review window between games: poll the page for the Replay button and the
 // provider dropdown. Returns { rerun, providerName } — rerun true means the
 // user asked for another game with providerName as the decision provider.
 async function waitForReviewOrClose() {
-  if (!reviewMs) return { rerun: false, providerName: null };
-  const deadline = Date.now() + reviewMs;
-  console.log(`运行结束：浏览器保留最多 ${Math.ceil(reviewMs / 1000)} 秒——页面「重跑」按钮可再来一局（下拉框切换决策方，下一局生效），手动关闭浏览器立即结束。`);
+  const deadline = reviewMs > 0 ? Date.now() + reviewMs : Number.POSITIVE_INFINITY;
+  console.log(reviewMs > 0
+    ? `Run finished. The browser stays open for up to ${Math.ceil(reviewMs / 1000)} seconds; click Replay to start another game or close the browser to stop.`
+    : "Run finished. The browser stays open; click Replay to start another game or close the browser to stop.");
   while (Date.now() < deadline) {
     await delay(Math.min(3000, deadline - Date.now()));
     try {
@@ -400,14 +404,14 @@ async function waitForReviewOrClose() {
         return { rerun: true, providerName: state.provider };
       }
     } catch {
-      console.log("检测到浏览器已手动关闭。");
+      console.log("Browser closed by the user.");
       return { rerun: false, providerName: null };
     }
   }
   return { rerun: false, providerName: null };
 }
 
-if (!isVerify && !provider) throw new Error("provider 初始化失败");
+if (!isVerify && !provider) throw new Error("Provider initialization failed");
 
 await mkdir(artifacts, { recursive: true });
 await mkdir(resultDir, { recursive: true });
@@ -440,7 +444,6 @@ try {
     await waitForBrowser();
     await waitForPageReady();
   } else {
-    cli("resize", "1280", "820");
     await waitForPageReady();
   }
   if (provider) {
@@ -467,7 +470,7 @@ try {
           ? "cleared"
           : result.exploded
             ? "mine"
-            : `stopped (步数上限 ${maxSteps}，可用 JEV_MAX_STEPS 调整)`;
+            : `stopped (step limit ${maxSteps}; adjust JEV_MAX_STEPS if needed)`;
       console.log(`${result.level}: ${outcome} in ${result.elapsedMs} ms`);
     }
     if (provider) {
@@ -477,7 +480,7 @@ try {
         transcript.mode = action.providerName;
         provider = providers[action.providerName];
         providerModel = providerModels[action.providerName];
-        console.log(`切换决策方：${provider.name}（模型 ${providerModel}）。`);
+        console.log(`Switched provider: ${provider.name} (model ${providerModel}).`);
       }
     }
   }
@@ -486,5 +489,9 @@ try {
   await saveTranscript();
   await writeFile(join(artifacts, "run-report.json"), JSON.stringify(report, null, 2));
   server?.kill();
-  try { cli("close"); } catch { /* browser is already gone */ }
+  // Provider runs intentionally leave Chrome open. The review loop ends only
+  // after the user closes the browser, so there is no automatic close here.
+  if (isVerify) {
+    try { cli("close"); } catch { /* browser is already gone */ }
+  }
 }

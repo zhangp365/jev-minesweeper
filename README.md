@@ -50,7 +50,7 @@ If a previous run was interrupted, the fixed Playwright session may still be ope
 JEV_MAX_STEPS=800            # model turn cap; by default a game is played to completion
 JEV_MIN_CONFIDENCE=0.2      # abort below this confidence
 JEV_CANDIDATE_LIMIT=12      # candidates offered per turn
-JEV_REVIEW_MS=60000         # how long the browser stays open after a run; 0 closes immediately
+JEV_REVIEW_MS=0             # wait for Replay until the browser is closed; a positive value limits this wait
 ```
 
 ## Outputs

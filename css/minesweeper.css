@@ -13,13 +13,13 @@ body {
 #workspace {
   display: flex;
   align-items: stretch;
-  gap: 16px;
+  gap: clamp(16px, 2vw, 32px);
   width: 100%;
   height: calc(100vh - 32px);
 }
 
 #game_panel {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -33,13 +33,17 @@ body {
 }
 
 #level_buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
 #level_buttons button {
-  width: 128px;
+  flex: 1 1 0;
+  width: auto;
+  max-width: 160px;
   padding: 7px 0;
-  margin: 0 4px;
   font-size: 16px;
   font-family: inherit;
 }
@@ -63,7 +67,8 @@ body {
 
 #jev_panel {
   box-sizing: border-box;
-  flex: 0 0 420px;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   min-height: 0;

@@ -1,54 +1,57 @@
 # jev-minesweeper
 
-Windows XP 风格扫雷（游戏代码基于 [ziebelje/minesweeper](https://github.com/ziebelje/minesweeper)，原仓库历史已重置，见文末致谢），加了一层自动化：由 **Jev** 或任意 **OpenAI 兼容模型** 通过真实 DOM 点击对局，页面右侧实时显示每一步的请求与返回。两个决策方使用完全相同的提示词与候选信息，只有输出格式要求不同，方便公平对比。
+English | [简体中文](./README.zh-CN.md)
 
-## 快速开始
+Minesweeper played by **Jev** or any **OpenAI-compatible model** through real DOM clicks, with a side panel showing every request and response in real time. Both providers receive the exact same prompt and candidate info — only the output format requirement differs — for a fair comparison.
+
+| Game start: safe center opening, decision panel on the right | Cleared: sunglasses face, mines auto-flagged, full request log |
+| --- | --- |
+| ![Game start](./artifacts/start.png) | ![Cleared](./artifacts/finish.png) |
+
+## Quick start
 
 ```bash
 npm install
-cp config/providers.example.yaml config/providers.yaml   # 填入 openai 的 base_url / model / api_key
+cp config/providers.example.yaml config/providers.yaml   # fill in openai base_url / model / api_key
 node scripts/play-all.mjs --provider openai --level beginner
 ```
 
-需要本机已安装 Node 18+ 与全局 `@playwright/cli`（自动化通过它的 `click`/`eval` 操作真实 Chrome 页面）。
+Requires Node 18+ and a global `@playwright/cli` install (the automation drives a real Chrome page through its `click`/`eval`).
 
-## 常用命令
+## Commands
 
 ```bash
-node scripts/play-all.mjs --provider openai --level beginner   # OpenAI 兼容接口对局
-node scripts/play-all.mjs --provider jev --level beginner      # Jev 对局
-node scripts/play-all.mjs --level beginner                     # 使用 yaml 里的 default_provider
-node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟，只验证点击链路
+node scripts/play-all.mjs --provider jev --level beginner      # Jev
+node scripts/play-all.mjs --provider openai --level beginner   # OpenAI-compatible model
+node scripts/play-all.mjs --level beginner                     # use default_provider from the yaml
+node scripts/play-all.mjs --verify --level beginner            # keyless smoke test of the click path
 ```
 
-`--level` 可选 `beginner` / `intermediate` / `expert`，省略则三个等级连打。对局全自动：中心安全开局、自动给推导出的确定雷插旗、只剩一个候选时本地直选，直到通关、踩雷或达到步数上限。
+`--level` accepts `beginner` / `intermediate` / `expert`; omit it to play all three. A game runs fully autonomously: safe center opening, auto-flagging of deduced mines, local click when a single candidate remains, until the game is cleared, a mine explodes, or the step limit is hit.
 
-## 配置 config/providers.yaml
+## Configuration — config/providers.yaml
 
-已被 `.gitignore` 忽略，**不要把密钥提交进仓库**。
-
-| 配置 | 说明 |
+| Key | Meaning |
 | --- | --- |
-| `default_provider` | `jev` 或 `openai`，命令行 `--provider` 优先 |
-| `jev.endpoint` / `model` / `api_key` | 密钥留空时读环境变量 `TYPESAFE_API_KEY`、`JEV_API_KEY` |
-| `openai.base_url` / `model` / `api_key` | 任意 OpenAI 兼容端点；`api_key` 也可用 `api_key_env` 指向环境变量 |
-| `openai.temperature` / `json_mode` | 默认 0 / true（`json_mode: false` 适配不带 `response_format` 的端点） |
-| `request.attempts` / `proxy` | 网络重试次数与代理；`JEV_REQUEST_ATTEMPTS`、`JEV_PROXY`、`HTTPS_PROXY` 等环境变量优先 |
+| `default_provider` | `jev` or `openai`; the `--provider` flag wins |
+| `jev.endpoint` / `model` / `api_key` | With an empty key, the env vars `TYPESAFE_API_KEY` and `JEV_API_KEY` are used |
+| `openai.base_url` / `model` / `api_key` | Any OpenAI-compatible endpoint; `api_key` may alternatively point at an env var via `api_key_env` |
+| `openai.temperature` / `json_mode` | Default 0 / true (`json_mode: false` for endpoints without `response_format` support) |
+| `request.attempts` / `proxy` | Network retries and proxy; `JEV_REQUEST_ATTEMPTS`, `JEV_PROXY`, `HTTPS_PROXY` env vars take precedence |
 
-## 可调环境变量
+## Environment variables
 
 ```bash
-JEV_MAX_STEPS=80            # 模型步数上限，默认打完整局
-JEV_MIN_CONFIDENCE=0.2      # 置信度下限，低于即终止
-JEV_CANDIDATE_LIMIT=12      # 每步交给模型的候选数
-JEV_REVIEW_MS=60000         # 结束后保留浏览器的时间，0 立即关闭
+JEV_MAX_STEPS=800            # model turn cap; by default a game is played to completion
+JEV_MIN_CONFIDENCE=0.2      # abort below this confidence
+JEV_CANDIDATE_LIMIT=12      # candidates offered per turn
+JEV_REVIEW_MS=60000         # how long the browser stays open after a run; 0 closes immediately
 ```
 
-## 输出
+## Outputs
+- `artifacts/run-report.json`: per-level provider, result (cleared / mine / stopped) and timings.
+- `result/jev-<timestamp>.json`: the full sanitized request and response of every turn (never contains keys).
 
-- `artifacts/run-report.json`：每局 provider、结果（cleared / mine / stopped）与耗时。
-- `result/jev-时间戳.json`：每一步的完整脱敏请求与返回（不含任何密钥）。
+## Acknowledgments
 
-## 致谢
-
-本项目的游戏代码导入自 [ziebelje/minesweeper](https://github.com/ziebelje/minesweeper)（作者 Jon Ziebell），在此基础上加入了 LLM 自动化，在此感谢原作者。
+The game code in this project was imported from [ziebelje/minesweeper](https://github.com/ziebelje/minesweeper) (by Jon Ziebell), with the LLM automation layer built on top. Thank you!

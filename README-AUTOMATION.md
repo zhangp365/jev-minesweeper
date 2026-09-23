@@ -2,7 +2,7 @@
 
 这是 Windows XP 风格扫雷的 DOM 自动化示例。页面左侧是游戏，右侧会显示每一步发往决策模型的脱敏请求、API 返回和主要耗时。API 密钥只存在于运行脚本的本机进程中，绝不会被写入页面或报告。
 
-决策提供方（provider）可切换，二者共享同一套候选排序与邻域摘要，返回同构的落子结果：
+决策提供方（provider）可切换，二者共享同一套候选排序与邻域摘要，返回同构的落子结果。决策提示词的核心（角色、推理规则、候选描述说明，见 `scripts/prompt.mjs` 的 `DECISION_INSTRUCTIONS`）对两个 provider 逐字一致，唯一的差异是 OpenAI 侧在其上附加输出要求（只输出 JSON 对象及字段格式）；Jev 的 choice schema 自身约束输出，无需附加：
 
 - `jev`：Jev choice 接口（默认）。
 - `openai`：任意 OpenAI 兼容的 chat/completions 接口（OpenAI、vLLM、one-api 等），提示词强制要求 JSON 返回，解析带健壮性兜底。

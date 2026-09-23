@@ -3,6 +3,7 @@
 // neighbourhood so Jev can judge locally.
 import { execFileSync } from "node:child_process";
 import { neighborSummary } from "../board-analysis.mjs";
+import { DECISION_INSTRUCTIONS } from "../prompt.mjs";
 
 // Key precedence: YAML api_key > process env > Windows machine-scoped env.
 // A machine-scoped variable is not automatically inherited by a long-lived
@@ -24,7 +25,8 @@ export function createJevProvider({ endpoint, model, apiKey, postJson }) {
     name: "jev",
     async choose({ board, candidates, knownMines, level, step }) {
       const candidateKeys = new Set(candidates.map((cell) => `${cell.x},${cell.y}`));
-      const instructions = "You are a Minesweeper expert playing a Minesweeper game. Select one candidate cell to reveal. Return only the single safest choice.\n1. Use adjacent numbers to determine whether there is a mine, and return a cell that cannot contain a mine.\n2. If the numbers are insufficient to deduce this, evaluate the total number of mines on the board and try the lowest-risk choice.\n3. Each option's criterion lists its 8 surrounding cells: numbered neighbours as (x,y)=count, and any neighbour confirmed to be a mine.";
+      // Shared decision prompt core — identical to every provider by design.
+      const instructions = DECISION_INSTRUCTIONS;
       // Jev's choice schema requires criteria to be a dictionary. The coordinate
       // keys identify the choices; each value describes that candidate's immediate
       // neighbourhood so Jev can judge it without rescanning the whole board.

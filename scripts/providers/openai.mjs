@@ -2,6 +2,7 @@
 // The prompt demands a strict JSON answer; LLM output is still parsed
 // defensively because models routinely wrap JSON in prose or code fences.
 import { neighborSummary } from "../board-analysis.mjs";
+import { DECISION_INSTRUCTIONS } from "../prompt.mjs";
 
 // Best-effort JSON extraction: plain JSON > fenced block > first {...} span >
 // repaired span (trailing commas, curly quotes). Throws when nothing parses.
@@ -151,10 +152,8 @@ function buildPrompt({ board, candidates, knownMines, level, step }) {
     "你只能从以下候选格中选择一个翻开（已排除由数字约束确定的雷）：",
     candidateLines,
     "",
-    "推理要求：",
-    "1. 结合棋盘与每个候选邻域里的数字，自行推理是否存在必然无雷的候选；能推理出来就选它。",
-    "2. 无法确定时，结合剩余雷数（总雷数减已插旗）与各候选周围未知格数量，自行估算每个候选的踩雷概率，选最低的。",
-    "3. 概率相近时，优先与已翻开数字相邻的候选；「邻域无数字」的盲选格不确定性最大，最后才考虑。", "",
+    DECISION_INSTRUCTIONS,
+    "",
     "输出要求：只输出一个 JSON 对象，不要输出任何其他文字、解释或 Markdown 代码块，格式：",
     JSON_FORMAT_HINT,
     "其中 choice 必须取自上面的候选列表，confidence 是你对“该格无雷”的把握程度。"

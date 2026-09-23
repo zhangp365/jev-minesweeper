@@ -1,13 +1,13 @@
 {
-  "mode": "openai",
-  "provider": "openai",
-  "startedAt": "2026-09-23T01:36:34.473Z",
-  "resultFile": "result/jev-2026-09-23T01-36-34-473Z.json",
+  "mode": "jev",
+  "provider": "jev",
+  "startedAt": "2026-09-23T01:57:43.840Z",
+  "resultFile": "result/jev-2026-09-23T01-57-43-840Z.json",
   "levels": [
     {
       "level": "Beginner",
-      "mode": "openai",
-      "provider": "openai",
+      "mode": "jev",
+      "provider": "jev",
       "moves": [
         {
           "step": 1,
@@ -15,42 +15,168 @@
           "x": 4,
           "y": 4,
           "timings": {
-            "boardReadMs": 604,
+            "boardReadMs": 622,
             "modelRequestMs": 0,
-            "playwrightClickMs": 622,
-            "stateReadAndPanelMs": 619,
-            "turnTotalMs": 1845
+            "playwrightClickMs": 621,
+            "stateReadAndPanelMs": 616,
+            "turnTotalMs": 1859
           }
         },
         {
           "step": 2,
-          "source": "openai",
-          "provider": "openai",
+          "source": "jev",
+          "provider": "jev",
           "x": 3,
-          "y": 2,
-          "confidence": 0.95,
+          "y": 4,
+          "confidence": 0.22,
           "usage": {
-            "prompt_tokens": 828,
-            "completion_tokens": 39,
-            "total_tokens": 867
+            "input_tokens": 1127,
+            "output_tokens": 128
           },
-          "model": "deepseek-v4.1-flash",
-          "autoFlagged": 3,
+          "model": "jev-1.13.0",
           "timings": {
             "boardReadMs": 0,
-            "autoFlagMs": 2444,
-            "modelRequestMs": 2297,
-            "playwrightClickMs": 614,
-            "stateReadAndPanelMs": 619,
-            "turnTotalMs": 5976
+            "autoFlagMs": 1,
+            "modelRequestMs": 1008,
+            "playwrightClickMs": 604,
+            "stateReadAndPanelMs": 607,
+            "turnTotalMs": 2221
+          }
+        },
+        {
+          "step": 3,
+          "source": "jev",
+          "provider": "jev",
+          "x": 0,
+          "y": 8,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 1280,
+            "output_tokens": 128
+          },
+          "model": "jev-1.13.0",
+          "autoFlagged": 4,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 3054,
+            "modelRequestMs": 349,
+            "playwrightClickMs": 603,
+            "stateReadAndPanelMs": 598,
+            "turnTotalMs": 4604
+          }
+        },
+        {
+          "step": 4,
+          "source": "jev",
+          "provider": "jev",
+          "x": 5,
+          "y": 3,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 1265,
+            "output_tokens": 128
+          },
+          "model": "jev-1.13.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 290,
+            "playwrightClickMs": 615,
+            "stateReadAndPanelMs": 599,
+            "turnTotalMs": 1505
+          }
+        },
+        {
+          "step": 5,
+          "source": "jev",
+          "provider": "jev",
+          "x": 5,
+          "y": 2,
+          "confidence": 0.13,
+          "usage": {
+            "input_tokens": 1269,
+            "output_tokens": 128
+          },
+          "model": "jev-1.13.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 513,
+            "playwrightClickMs": 610,
+            "stateReadAndPanelMs": 595,
+            "turnTotalMs": 1718
+          }
+        },
+        {
+          "step": 6,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 4,
+          "confidence": 0.14,
+          "usage": {
+            "input_tokens": 1238,
+            "output_tokens": 128
+          },
+          "model": "jev-1.13.0",
+          "autoFlagged": 2,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 1884,
+            "modelRequestMs": 273,
+            "playwrightClickMs": 604,
+            "stateReadAndPanelMs": 590,
+            "turnTotalMs": 3351
+          }
+        },
+        {
+          "step": 7,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 5,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 1205,
+            "output_tokens": 119
+          },
+          "model": "jev-1.13.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 335,
+            "playwrightClickMs": 616,
+            "stateReadAndPanelMs": 594,
+            "turnTotalMs": 1545
+          }
+        },
+        {
+          "step": 8,
+          "source": "jev",
+          "provider": "jev",
+          "x": 7,
+          "y": 4,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 1163,
+            "output_tokens": 110
+          },
+          "model": "jev-1.13.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 342,
+            "playwrightClickMs": 612,
+            "stateReadAndPanelMs": 589,
+            "turnTotalMs": 1544
           }
         }
       ],
-      "elapsedMs": 8428,
+      "elapsedMs": 18944,
       "cleared": false,
-      "exploded": false,
-      "stepLimitReached": true
+      "exploded": true,
+      "stepLimitReached": false
     }
   ],
-  "finishedAt": "2026-09-23T01:36:44.907Z"
+  "finishedAt": "2026-09-23T01:59:05.816Z"
 }

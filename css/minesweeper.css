@@ -5,9 +5,39 @@ html, body {
 body {
   box-sizing: border-box;
   margin: 0;
-  padding: 24px;
+  padding: 16px;
   background-color: #bdbdbd;
   font-family: Tahoma, "Microsoft YaHei UI", "Microsoft YaHei", SimSun, Arial, sans-serif;
+}
+
+#workspace {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+  height: calc(100vh - 32px);
+}
+
+#game_panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+#game_panel h1 {
+  margin: 0 0 12px;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+#level_buttons {
+  margin-bottom: 12px;
+}
+
+#level_buttons button {
+  width: 108px;
 }
 
 #play_area {
@@ -23,49 +53,16 @@ body {
   image-rendering: pixelated;
 }
 
-#workspace {
-  display: flex;
-  align-items: stretch;
-  gap: 24px;
-  max-width: 1280px;
-  height: calc(100vh - 48px);
-  margin: 0 auto;
-}
-
-#game_panel {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-#game_panel h1 {
-  margin: 0 0 16px;
-}
-
-#level_buttons button {
-  width: 108px;
-}
-
 #jev_panel {
   box-sizing: border-box;
   flex: 0 0 420px;
-  max-height: 100%;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   padding: 16px;
   background: #ece9d8;
   border: 2px outset #fff;
   text-align: left;
-}
-
-#jev_provider {
-  margin: 0 0 8px;
-  padding: 6px 8px;
-  background: #d4d0c8;
-  border: 1px inset #808080;
-  font-weight: bold;
-  font-size: 13px;
 }
 
 #jev_panel h2, #jev_panel h3 {
@@ -77,14 +74,28 @@ body {
   font-size: 14px;
 }
 
+#jev_provider {
+  flex: 0 0 auto;
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  background: #d4d0c8;
+  border: 1px inset #808080;
+  font-weight: bold;
+  font-size: 13px;
+}
+
 #jev_status {
+  flex: 0 0 auto;
   margin: 0;
   color: #333;
   font-size: 13px;
 }
 
 #jev_log {
-  margin-top: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 12px;
+  overflow: auto;
 }
 
 .jev_entry {
@@ -117,8 +128,9 @@ body {
 }
 
 @media (max-width: 920px) {
+  body { padding: 12px; }
   #workspace { flex-direction: column; height: auto; }
   #game_panel, #jev_panel { width: 100%; }
-  #jev_panel { flex-basis: auto; max-height: none; }
+  #jev_panel { flex-basis: auto; max-height: 70vh; }
   #play_area { min-height: 320px; }
 }

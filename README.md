@@ -2,7 +2,7 @@
 
 English | [简体中文](./README.zh-CN.md)
 
-Minesweeper played by **Jev** or any **OpenAI-compatible model** through real DOM clicks, with a side panel showing every request and response in real time. Both providers receive the exact same prompt and candidate info — only the output format requirement differs — for a fair comparison.
+An LLM-driven Minesweeper experiment: **Jev** or any **OpenAI-compatible model** plays through real Chrome DOM clicks, while the side panel shows every sanitized request and response in real time. Both providers receive the same decision instructions, board state, and candidate information; only the API request/output wrappers differ.
 
 | Game start: safe center opening, decision panel on the right | Cleared: sunglasses face, mines auto-flagged, full request log |
 | --- | --- |
@@ -12,11 +12,13 @@ Minesweeper played by **Jev** or any **OpenAI-compatible model** through real DO
 
 ```bash
 npm install
+npm install -g @playwright/cli
 cp config/providers.example.yaml config/providers.yaml   # fill in openai base_url / model / api_key
 node scripts/play-all.mjs --provider openai --level beginner
 ```
 
-Requires Node 18+ and a global `@playwright/cli` install (the automation drives a real Chrome page through its `click`/`eval`).
+Requires Node.js 22.19+ (the `undici` dependency requirement), Google Chrome, and the global `@playwright/cli` package. The automation drives a real Chrome page through Playwright CLI `click`/`eval` commands.
+
 
 ## Commands
 
@@ -24,10 +26,13 @@ Requires Node 18+ and a global `@playwright/cli` install (the automation drives 
 node scripts/play-all.mjs --provider jev --level beginner      # Jev
 node scripts/play-all.mjs --provider openai --level beginner   # OpenAI-compatible model
 node scripts/play-all.mjs --level beginner                     # use default_provider from the yaml
-node scripts/play-all.mjs --verify --level beginner            # keyless smoke test of the click path
+npm test                                                        # keyless smoke test for all three levels
+node scripts/play-all.mjs --verify --level beginner            # keyless smoke test for one level
 ```
 
-`--level` accepts `beginner` / `intermediate` / `expert`; omit it to play all three. A game runs fully autonomously: safe center opening, auto-flagging of deduced mines, local click when a single candidate remains, until the game is cleared, a mine explodes, or the step limit is hit.
+`--level` accepts `beginner` / `intermediate` / `expert`; omit it to play all three. `--verify` performs one known-safe real DOM click per level and does not call an LLM. A provider run is autonomous: safe center opening, auto-flagging of deduced mines, local click when a single candidate remains, until the game is cleared, a mine explodes, or the step limit is hit. A provider run is probabilistic and is not guaranteed to win every game.
+
+If a previous run was interrupted, the fixed Playwright session may still be open. The normal command now closes that stale session automatically; use `--reuse-session` only when intentionally continuing an existing browser session.
 
 ## Configuration — config/providers.yaml
 
@@ -51,6 +56,8 @@ JEV_REVIEW_MS=60000         # how long the browser stays open after a run; 0 clo
 ## Outputs
 - `artifacts/run-report.json`: per-level provider, result (cleared / mine / stopped) and timings.
 - `result/jev-<timestamp>.json`: the full sanitized request and response of every turn (never contains keys).
+
+The `--verify` console result is reported as `verified (1 safe click)`; it is not a completed game result.
 
 ## Acknowledgments
 

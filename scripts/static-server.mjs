@@ -13,7 +13,9 @@ createServer(async (request, response) => {
     const filename = normalize(join(root, pathname));
     if (!filename.startsWith(root)) throw new Error("outside project root");
     const data = await readFile(filename);
-    response.writeHead(200, { "content-type": mimeTypes[extname(filename)] || "application/octet-stream" });
+    // The persistent Chrome profile caches without validators; a stale
+    // index.html would silently revert UI changes between runs.
+    response.writeHead(200, { "content-type": mimeTypes[extname(filename)] || "application/octet-stream", "cache-control": "no-store" });
     response.end(data);
   } catch {
     response.writeHead(404).end("Not found");

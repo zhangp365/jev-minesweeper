@@ -96,8 +96,17 @@ body {
   font-size: 13px;
 }
 
+#jev_provider_label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 #jev_provider_select {
-  max-width: 55%;
+  flex: 0 0 auto;
+  max-width: 48%;
   font: 12px/1.4 Tahoma, "Microsoft YaHei UI", "Microsoft YaHei", SimSun, Arial, sans-serif;
 }
 

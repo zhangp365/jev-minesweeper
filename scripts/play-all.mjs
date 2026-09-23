@@ -9,8 +9,9 @@
  * --provider openai   let any OpenAI-compatible chat model select every reveal.
  *
  * Provider endpoints/models/keys live in config/providers.yaml (see
- * config/providers.example.yaml). Both providers share the same candidate
- * ranking and return the same move shape, so switching is one flag.
+ * config/providers.example.yaml). Both providers share the same decision
+ * instructions, board state, candidate ranking, and move shape; only their
+ * API request/output wrappers differ.
  */
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -168,6 +169,10 @@ function openBrowser(url) {
   }
 }
 
+function closeExistingSession() {
+  try { cli("close"); } catch { /* no existing session */ }
+}
+
 async function waitForBrowser() {
   let lastError;
   for (let attempt = 0; attempt < 30; attempt++) {
@@ -180,6 +185,19 @@ async function waitForBrowser() {
     }
   }
   throw lastError || new Error("Playwright browser session did not start");
+}
+
+async function waitForPageReady() {
+  let lastError;
+  for (let attempt = 0; attempt < 30; attempt++) {
+    try {
+      if (readJson("document.getElementById('button_beginner') !== null")) return;
+    } catch (error) {
+      lastError = error;
+    }
+    await delay(250);
+  }
+  throw lastError || new Error("Minesweeper page did not finish loading");
 }
 
 function delay(milliseconds) {
@@ -374,7 +392,9 @@ async function waitForReviewOrClose() {
   while (Date.now() < deadline) {
     await delay(Math.min(3000, deadline - Date.now()));
     try {
-      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); return { rerun: window.__jevRerun === true, provider: s && !s.hidden ? s.value : null }; })()`);
+      // A page reload wipes the dropdown; re-push the options whenever the
+      // select is missing so the controls survive refreshes.
+      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); var s2 = document.getElementById('jev_provider_select'); return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null }; })()`);
       if (state.rerun) {
         cli("eval", "() => (window.__jevRerun = false, true)");
         return { rerun: true, providerName: state.provider };
@@ -412,10 +432,16 @@ const report = { mode: transcript.mode, provider: transcript.provider, startedAt
 
 try {
   if (!reuseSession) {
+    // A crashed previous run can leave the fixed named session open on an old
+    // page. Close it before opening a fresh page; --reuse-session is the
+    // explicit opt-in for intentionally continuing an existing session.
+    closeExistingSession();
     openBrowser(`http://127.0.0.1:${port}/`);
     await waitForBrowser();
+    await waitForPageReady();
   } else {
     cli("resize", "1280", "820");
+    await waitForPageReady();
   }
   if (provider) {
     // The page may still be loading when the browser session is ready;
@@ -435,7 +461,13 @@ try {
     for (const level of levelsToPlay) {
       const result = await playLevel(level);
       report.levels.push(result);
-      const outcome = result.cleared ? "cleared" : result.exploded ? "mine" : `stopped (步数上限 ${maxSteps}，可用 JEV_MAX_STEPS 调整)`;
+      const outcome = result.mode === "verify"
+        ? "verified (1 safe click)"
+        : result.cleared
+          ? "cleared"
+          : result.exploded
+            ? "mine"
+            : `stopped (步数上限 ${maxSteps}，可用 JEV_MAX_STEPS 调整)`;
       console.log(`${result.level}: ${outcome} in ${result.elapsedMs} ms`);
     }
     if (provider) {

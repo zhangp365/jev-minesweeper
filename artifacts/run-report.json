@@ -1,56 +1,33 @@
 {
-  "mode": "openai",
-  "provider": "openai",
-  "startedAt": "2026-09-23T03:09:22.631Z",
-  "resultFile": "result/jev-2026-09-23T03-09-22-631Z.json",
+  "mode": "verify",
+  "provider": null,
+  "startedAt": "2026-09-23T03:23:02.090Z",
+  "resultFile": "result/jev-2026-09-23T03-23-02-090Z.json",
   "levels": [
     {
       "level": "Beginner",
-      "mode": "openai",
-      "provider": "openai",
-      "moves": [
-        {
-          "step": 1,
-          "source": "opening",
-          "x": 4,
-          "y": 4,
-          "timings": {
-            "boardReadMs": 604,
-            "modelRequestMs": 0,
-            "playwrightClickMs": 637,
-            "stateReadAndPanelMs": 635,
-            "turnTotalMs": 1875
-          }
-        },
-        {
-          "step": 2,
-          "source": "openai",
-          "provider": "openai",
-          "x": 0,
-          "y": 2,
-          "confidence": 0.95,
-          "usage": {
-            "prompt_tokens": 856,
-            "completion_tokens": 56,
-            "total_tokens": 912
-          },
-          "model": "deepseek-v4.1-flash",
-          "autoFlagged": 4,
-          "timings": {
-            "boardReadMs": 0,
-            "autoFlagMs": 3158,
-            "modelRequestMs": 2756,
-            "playwrightClickMs": 624,
-            "stateReadAndPanelMs": 618,
-            "turnTotalMs": 7157
-          }
-        }
-      ],
-      "elapsedMs": 9666,
+      "mode": "verify",
+      "moves": 1,
+      "elapsedMs": 2798,
       "cleared": false,
-      "exploded": false,
-      "stepLimitReached": true
+      "exploded": false
+    },
+    {
+      "level": "Intermediate",
+      "mode": "verify",
+      "moves": 1,
+      "elapsedMs": 2829,
+      "cleared": false,
+      "exploded": false
+    },
+    {
+      "level": "Expert",
+      "mode": "verify",
+      "moves": 1,
+      "elapsedMs": 2853,
+      "cleared": false,
+      "exploded": false
     }
   ],
-  "finishedAt": "2026-09-23T03:12:08.646Z"
+  "finishedAt": "2026-09-23T03:23:14.626Z"
 }

@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Windows XP style Minesweeper played by Jev or any OpenAI-compatible model through real DOM clicks.",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "test": "node scripts/play-all.mjs --verify"
+  },
   "dependencies": {
     "undici": "^8.11.0",
     "yaml": "^2.9.1"

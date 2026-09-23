@@ -2,7 +2,7 @@
 
 [English](./README.md) | 简体中文
 
-Jev 自动扫雷：由 **Jev** 或任意 **OpenAI 兼容模型** 通过真实 DOM 点击对局，页面右侧实时显示每一步的请求与返回。两个决策方使用完全相同的提示词与候选信息，只有输出格式要求不同，方便公平对比。
+这是一个 LLM 扫雷实验项目：由 **Jev** 或任意 **OpenAI 兼容模型** 通过真实 Chrome DOM 点击对局，页面右侧实时显示每一步的脱敏请求与返回。两个决策方共享相同的决策指令、棋盘状态和候选信息，但分别适配各自的 API 请求与输出格式。
 
 | 对局开始：中心安全开局，右侧为决策面板 | 通关：墨镜脸、自动插旗、完整请求记录 |
 | --- | --- |
@@ -12,11 +12,13 @@ Jev 自动扫雷：由 **Jev** 或任意 **OpenAI 兼容模型** 通过真实 DO
 
 ```bash
 npm install
+npm install -g @playwright/cli
 cp config/providers.example.yaml config/providers.yaml   # 填入 openai 的 base_url / model / api_key
 node scripts/play-all.mjs --provider openai --level beginner
 ```
 
-需要本机已安装 Node 18+ 与全局 `@playwright/cli`（自动化通过它的 `click`/`eval` 操作真实 Chrome 页面）。
+需要 Node.js 22.19+（`undici` 依赖的版本要求）、Google Chrome 与全局 `@playwright/cli`。自动化通过 Playwright CLI 的 `click`/`eval` 操作真实 Chrome 页面。
+
 
 ## 常用命令
 
@@ -24,10 +26,13 @@ node scripts/play-all.mjs --provider openai --level beginner
 node scripts/play-all.mjs --provider jev --level beginner      # Jev 对局
 node scripts/play-all.mjs --provider openai --level beginner   # OpenAI 兼容接口对局
 node scripts/play-all.mjs --level beginner                     # 使用 yaml 里的 default_provider
-node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟，只验证点击链路
+npm test                                                        # 无密钥冒烟，验证三个等级
+node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟，只验证一个等级
 ```
 
-`--level` 可选 `beginner` / `intermediate` / `expert`，省略则三个等级连打。对局全自动：中心安全开局、自动给推导出的确定雷插旗、只剩一个候选时本地直选，直到通关、踩雷或达到步数上限。
+`--level` 可选 `beginner` / `intermediate` / `expert`，省略则三个等级连打。`--verify` 每个等级只执行一次已知安全的真实 DOM 点击，不调用模型。正式 provider 对局会自动中心开局、给推导出的确定雷插旗、在只剩一个候选时本地直选，直到通关、踩雷或达到步数上限；模型决策具有概率性，不保证每局通关。
+
+如果上次运行被中断，固定的 Playwright 会话可能仍停留在旧页面。普通命令现在会自动关闭旧会话；只有确实要继续已有浏览器会话时才使用 `--reuse-session`。
 
 ## 配置 config/providers.yaml
 
@@ -51,6 +56,8 @@ JEV_REVIEW_MS=60000         # 结束后保留浏览器的时间，0 立即关闭
 ## 输出
 - `artifacts/run-report.json`：每局 provider、结果（cleared / mine / stopped）与耗时。
 - `result/jev-时间戳.json`：每一步的完整脱敏请求与返回（不含任何密钥）。
+
+`--verify` 的终端结果会显示为 `verified (1 safe click)`，表示点击链路验证成功，不代表完成了一局扫雷。
 
 ## 致谢
 

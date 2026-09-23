@@ -2,6 +2,8 @@
 // The table is rebuilt on every new_game, so observe the container as well as
 // window resizes. Pixelated rendering keeps the sprite art crisp when scaled.
 (function () {
+  var BREATHING = 24; // keep an even margin between board and container edges
+
   function fitBoard() {
     var area = document.getElementById("play_area");
     if (!area) return;
@@ -10,7 +12,9 @@
     var naturalWidth = table.offsetWidth;
     var naturalHeight = table.offsetHeight;
     if (!naturalWidth || !naturalHeight) return;
-    var scale = Math.min(area.clientWidth / naturalWidth, area.clientHeight / naturalHeight);
+    var availableWidth = Math.max(0, area.clientWidth - BREATHING);
+    var availableHeight = Math.max(0, area.clientHeight - BREATHING);
+    var scale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight);
     if (!isFinite(scale) || scale <= 0) return;
     table.style.transformOrigin = "center center";
     table.style.transform = "scale(" + scale + ")";

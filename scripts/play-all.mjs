@@ -49,6 +49,7 @@ const candidateLimit = Number(process.env.JEV_CANDIDATE_LIMIT || 12);
 // Keep the browser open until the user closes it. Set JEV_REVIEW_MS to a
 // positive value only when an automatic review timeout is wanted.
 const reviewMs = Math.max(0, Number(process.env.JEV_REVIEW_MS || 0));
+const reviewPollMs = Math.max(50, Number(process.env.JEV_REVIEW_POLL_MS || 200));
 const runStartedAt = new Date();
 
 function providerFromArgv() {
@@ -59,9 +60,9 @@ function providerFromArgv() {
 }
 
 const levels = [
-  { id: "beginner", name: "Beginner" },
-  { id: "intermediate", name: "Intermediate" },
-  { id: "expert", name: "Expert" }
+  { id: "beginner", name: "Beginner", width: 9, height: 9 },
+  { id: "intermediate", name: "Intermediate", width: 16, height: 16 },
+  { id: "expert", name: "Expert", width: 30, height: 16 }
 ];
 const levelsToPlay = selectedLevel ? levels.filter((level) => level.id === selectedLevel) : levels;
 if (selectedLevel && !levelsToPlay.length) throw new Error(`Unknown level: ${selectedLevel}`);
@@ -218,9 +219,77 @@ function readJson(expression) {
   return JSON.parse(JSON.parse(match[1].trim()));
 }
 
-function readBoardAndRenderPanel(entry) {
+// A separate Playwright CLI process costs more than the DOM operation itself.
+// Dispatch the same mousedown/mouseup sequence inside the real Chrome page so
+// one eval can click, update the panel, and read the resulting board.
+function clickAndRenderPanel(x, y, entry, button = 0) {
   const encoded = Buffer.from(JSON.stringify(entry)).toString("base64");
-  return readJson(`(() => { var binary = atob(\`${encoded}\`); var bytes = Uint8Array.from(binary, function (character) { return character.charCodeAt(0); }); var entry = JSON.parse(new TextDecoder().decode(bytes)); if (window.jevPanel) window.jevPanel.update(entry); return window.getJevBoardState(); })()`);
+  return readJson(`(() => {
+    var target = document.getElementById("cell-${x}-${y}");
+    if (!target) throw new Error("Cell ${x},${y} is not present");
+    var operationStarted = performance.now();
+    var button = ${button};
+    var buttons = button === 2 ? 2 : 1;
+    target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: button, buttons: buttons }));
+    target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, button: button, buttons: 0 }));
+    var binary = atob(\`${encoded}\`);
+    var bytes = Uint8Array.from(binary, function (character) { return character.charCodeAt(0); });
+    var entry = JSON.parse(new TextDecoder().decode(bytes));
+    if (entry.timings) entry.timings.playwrightClickMs = Math.round(performance.now() - operationStarted);
+    if (window.jevPanel) window.jevPanel.update(entry);
+    return window.getJevBoardState();
+  })()`);
+}
+
+function clickCellsAndRead(cells, button = 2) {
+  const encoded = JSON.stringify(cells);
+  return readJson(`(() => {
+    var cells = ${encoded};
+    var button = ${button};
+    var buttons = button === 2 ? 2 : 1;
+    cells.forEach(function (cell) {
+      var target = document.getElementById("cell-" + cell[0] + "-" + cell[1]);
+      if (!target) throw new Error("Cell " + cell[0] + "," + cell[1] + " is not present");
+      target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: button, buttons: buttons }));
+      target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, button: button, buttons: 0 }));
+    });
+    return window.getJevBoardState();
+  })()`);
+}
+
+function selectAndStartLevel(levelId) {
+  return readJson(`(() => {
+    var levelButton = document.getElementById("button_${levelId}");
+    var replay = document.getElementById("button_rerun");
+    if (!levelButton || !replay) throw new Error("Level controls are not ready");
+    levelButton.click();
+    replay.click();
+    window.__jevRerun = false;
+    return window.getSelectedLevel();
+  })()`);
+}
+
+function selectStartAndRenderOpening(levelId, x, y, entry) {
+  const encoded = Buffer.from(JSON.stringify(entry)).toString("base64");
+  return readJson(`(() => {
+    var levelButton = document.getElementById("button_${levelId}");
+    var replay = document.getElementById("button_rerun");
+    if (!levelButton || !replay) throw new Error("Level controls are not ready");
+    levelButton.click();
+    replay.click();
+    window.__jevRerun = false;
+    var target = document.getElementById("cell-${x}-${y}");
+    if (!target) throw new Error("Opening cell ${x},${y} is not present");
+    var operationStarted = performance.now();
+    target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: 0, buttons: 1 }));
+    target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, button: 0, buttons: 0 }));
+    var binary = atob(\`${encoded}\`);
+    var bytes = Uint8Array.from(binary, function (character) { return character.charCodeAt(0); });
+    var entry = JSON.parse(new TextDecoder().decode(bytes));
+    if (entry.timings) entry.timings.playwrightClickMs = Math.round(performance.now() - operationStarted);
+    if (window.jevPanel) window.jevPanel.update(entry);
+    return window.getJevBoardState();
+  })()`);
 }
 
 function replaySafeCells(board) {
@@ -266,37 +335,20 @@ async function chooseMove(board, level, step) {
   return move;
 }
 
-async function playLevel(level) {
-  cli("click", `button#button_${level.id}`);
+async function playLevel(level, { alreadyStarted = false } = {}) {
   const started = performance.now();
   const moves = [];
-
-  if (isVerify) {
-    const debugBoard = readJson("window.getBoardState({ includeMines: true })");
-    const safeCells = replaySafeCells(debugBoard);
-    // A short, screen-recorded smoke run makes one real Playwright CLI click
-    // on each level. Full autonomous play belongs to --provider runs, whose
-    // every move is selected by the model and clicked through the same CLI.
-    const [first] = safeCells;
-    cli("click", `td#cell-${first[0]}-${first[1]}`);
-    await delay(900);
-    const result = readJson("window.getJevBoardState()");
-    return { level: level.name, mode: "verify", moves: 1, elapsedMs: Math.round(performance.now() - started), cleared: result.cleared, exploded: result.exploded };
-  }
-
   let currentBoard;
-  if (maxSteps > 0) {
+  let openingStarted = false;
+
+  if (!alreadyStarted && !isVerify && maxSteps > 0) {
+    // The initial selection, Replay, safe opening, and panel update fit in one
+    // browser eval. This removes two CLI process launches before the first
+    // visible move.
     const turnStarted = performance.now();
-    const boardReadStarted = performance.now();
-    const board = readJson("window.getJevBoardState()");
-    const boardReadMs = Math.round(performance.now() - boardReadStarted);
-    const move = openingMove(board);
-    const clickStarted = performance.now();
-    cli("click", `td#cell-${move.x}-${move.y}`);
-    const clickMs = Math.round(performance.now() - clickStarted);
-    const timings = { boardReadMs, modelRequestMs: 0, playwrightClickMs: clickMs };
-    const panelReadStarted = performance.now();
-    currentBoard = readBoardAndRenderPanel({
+    const move = openingMove(level);
+    const timings = { boardReadMs: 0, modelRequestMs: 0, playwrightClickMs: 0 };
+    currentBoard = selectStartAndRenderOpening(level.id, move.x, move.y, {
       status: `Step 1: safe opening; clicked the center cell (${move.x}, ${move.y}).`,
       provider: provider.name,
       model: providerModel,
@@ -310,7 +362,54 @@ async function playLevel(level) {
       },
       timings
     });
-    timings.stateReadAndPanelMs = Math.round(performance.now() - panelReadStarted);
+    timings.playwrightClickMs = Math.round(performance.now() - turnStarted);
+    timings.stateReadAndPanelMs = 0;
+    timings.turnTotalMs = Math.round(performance.now() - turnStarted);
+    moves.push({ step: 1, source: "opening", x: move.x, y: move.y, timings });
+    openingStarted = true;
+  } else if (!alreadyStarted) {
+    // Selecting a level only prepares an idle board. Replay is the explicit
+    // start action and is also what starts the game's timer.
+    selectAndStartLevel(level.id);
+  }
+
+  if (isVerify) {
+    const debugBoard = readJson("window.getBoardState({ includeMines: true })");
+    const safeCells = replaySafeCells(debugBoard);
+    // A short, screen-recorded smoke run makes one real Playwright CLI click
+    // on each level. Full autonomous play belongs to --provider runs, whose
+    // every move is selected by the model and clicked through the same CLI.
+    const [first] = safeCells;
+    cli("click", `td#cell-${first[0]}-${first[1]}`);
+    await delay(100);
+    const result = readJson("window.getJevBoardState()");
+    return { level: level.name, mode: "verify", moves: 1, elapsedMs: Math.round(performance.now() - started), cleared: result.cleared, exploded: result.exploded };
+  }
+
+  if (maxSteps > 0 && !openingStarted) {
+    const turnStarted = performance.now();
+    // Replay has already prepared the selected level and started its timer;
+    // its dimensions are known locally, so do not read the untouched board
+    // through another CLI process before the safe opening click.
+    const move = openingMove(level);
+    const timings = { boardReadMs: 0, modelRequestMs: 0, playwrightClickMs: 0 };
+    const panelReadStarted = performance.now();
+    currentBoard = clickAndRenderPanel(move.x, move.y, {
+      status: `Step 1: safe opening; clicked the center cell (${move.x}, ${move.y}).`,
+      provider: provider.name,
+      model: providerModel,
+      request: {
+        source: "Local safe opening",
+        action: "Clicked the center cell; no model request was sent",
+        choice: move
+      },
+      response: {
+        result: "First-click protection is enabled: if the cell contained a mine, the game moved it before revealing the cell."
+      },
+      timings
+    });
+    timings.playwrightClickMs = Math.round(performance.now() - panelReadStarted);
+    timings.stateReadAndPanelMs = 0;
     timings.turnTotalMs = Math.round(performance.now() - turnStarted);
     moves.push({ step: 1, source: "opening", x: move.x, y: move.y, timings });
   }
@@ -337,23 +436,17 @@ async function playLevel(level) {
         return board.rows[y][x] === "#";
       });
       if (!unflagged.length) break;
-      for (const key of unflagged) {
-        const [x, y] = key.split(",").map(Number);
-        cli("click", `td#cell-${x}-${y}`, "right");
-        autoFlagged.push(key);
-      }
-      board = readJson("window.getJevBoardState()");
+      const flagCells = unflagged.map((key) => key.split(",").map(Number));
+      board = clickCellsAndRead(flagCells, 2);
+      autoFlagged.push(...unflagged);
     }
     currentBoard = board;
     const autoFlagMs = Math.round(performance.now() - autoFlagStarted);
     const move = await chooseMove(board, level, step);
-    const clickStarted = performance.now();
-    cli("click", `td#cell-${move.x}-${move.y}`);
-    const clickMs = Math.round(performance.now() - clickStarted);
-    const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, playwrightClickMs: clickMs };
+    const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, playwrightClickMs: 0 };
     const panelReadStarted = performance.now();
     const chooserLabel = move.source === "single-candidate" ? "local forced choice" : `${provider.name} (${move.model})`;
-    const afterClick = readBoardAndRenderPanel({
+    const afterClick = clickAndRenderPanel(move.x, move.y, {
       status: `Step ${step + 1}: ${chooserLabel} selected (${move.x}, ${move.y}), confidence ${move.answer.confidence ?? "unknown"}.`,
       provider: provider.name,
       model: move.source === "single-candidate" ? providerModel : (move.model || providerModel),
@@ -361,7 +454,8 @@ async function playLevel(level) {
       response: move.response,
       timings
     });
-    timings.stateReadAndPanelMs = Math.round(performance.now() - panelReadStarted);
+    timings.playwrightClickMs = Math.round(performance.now() - panelReadStarted);
+    timings.stateReadAndPanelMs = 0;
     timings.turnTotalMs = Math.round(performance.now() - turnStarted);
     if (!afterClick.cleared && !afterClick.exploded
       && afterClick.revealedCount === board.revealedCount
@@ -386,29 +480,31 @@ async function playLevel(level) {
 }
 
 // Review window between games: poll the page for the Replay button and the
-// provider dropdown. Returns { rerun, providerName } — rerun true means the
-// user asked for another game with providerName as the decision provider.
+// provider dropdown. Returns the selected provider and level when the user
+// asks for another game.
 async function waitForReviewOrClose() {
   const deadline = reviewMs > 0 ? Date.now() + reviewMs : Number.POSITIVE_INFINITY;
   console.log(reviewMs > 0
     ? `Run finished. The browser stays open for up to ${Math.ceil(reviewMs / 1000)} seconds; click Replay to start another game or close the browser to stop.`
     : "Run finished. The browser stays open; click Replay to start another game or close the browser to stop.");
   while (Date.now() < deadline) {
-    await delay(Math.min(3000, deadline - Date.now()));
     try {
       // A page reload wipes the dropdown; re-push the options whenever the
       // select is missing so the controls survive refreshes.
-      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); var s2 = document.getElementById('jev_provider_select'); return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null }; })()`);
+      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); var s2 = document.getElementById('jev_provider_select'); var level = typeof window.getSelectedLevel === 'function' ? window.getSelectedLevel() : window.__jevSelectedLevel; return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null, level: level || null }; })()`);
       if (state.rerun) {
         cli("eval", "() => (window.__jevRerun = false, true)");
-        return { rerun: true, providerName: state.provider };
+        return { rerun: true, providerName: state.provider, levelId: state.level };
       }
     } catch {
       console.log("Browser closed by the user.");
-      return { rerun: false, providerName: null };
+      return { rerun: false, providerName: null, levelId: null };
     }
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) break;
+    await delay(Math.min(reviewPollMs, remaining));
   }
-  return { rerun: false, providerName: null };
+  return { rerun: false, providerName: null, levelId: null };
 }
 
 if (!isVerify && !provider) throw new Error("Provider initialization failed");
@@ -459,10 +555,13 @@ try {
     }
   }
   let rerun = true;
+  let levelsForRun = levelsToPlay;
+  let alreadyStarted = false;
   while (rerun) {
     rerun = false;
-    for (const level of levelsToPlay) {
-      const result = await playLevel(level);
+    for (const level of levelsForRun) {
+      const result = await playLevel(level, { alreadyStarted });
+      alreadyStarted = false;
       report.levels.push(result);
       const outcome = result.mode === "verify"
         ? "verified (1 safe click)"
@@ -481,6 +580,15 @@ try {
         provider = providers[action.providerName];
         providerModel = providerModels[action.providerName];
         console.log(`Switched provider: ${provider.name} (model ${providerModel}).`);
+      }
+      if (rerun) {
+        const selected = levels.find((level) => level.id === action.levelId);
+        const allowed = Boolean(selected);
+        levelsForRun = allowed ? [selected] : levelsToPlay;
+        // The Replay button has already reset and started the selected board.
+        // If its level is unavailable (for example after a page reload), let
+        // playLevel perform the normal select-then-Replay sequence instead.
+        alreadyStarted = Boolean(allowed);
       }
     }
   }

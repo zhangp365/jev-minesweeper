@@ -96,8 +96,13 @@ arcade.minesweeper.prototype.build = function(width, height) {
   td_header_center.appendChild(header_table);
 }
 
-arcade.minesweeper.prototype.new_game = function(width, height, number_mines) {
+arcade.minesweeper.prototype.new_game = function(width, height, number_mines, start) {
   var self = this;
+
+  // Level selection prepares an idle board. Only Replay (or the face) starts
+  // the timer and begins a game.
+  var shouldStart = start !== false;
+  this.stop_timer();
 
   this.width = width;
   this.height = height;
@@ -120,18 +125,23 @@ arcade.minesweeper.prototype.new_game = function(width, height, number_mines) {
     });
 
   this.mine_counter = new arcade.minesweeper.ssd(this.header_td_mine_count, number_mines)
-  var timer = new arcade.minesweeper.ssd(this.header_td_timer, 0);
-
-  // Replace the previous game's interval; without this, every new_game
-  // leaks one that keeps ticking forever.
-  this.stop_timer();
-  this.timer_interval = setInterval(function() { timer.increment(); }, 1000);
+  this.timer = new arcade.minesweeper.ssd(this.header_td_timer, 0);
 
 	this.grid = new arcade.minesweeper.grid(this, this.grid_area, width, height, face);
 	this.grid.generate(number_mines);
+
+  if (shouldStart) this.start_timer();
 }
 arcade.minesweeper.prototype.restart = function() {
-  this.new_game(this.width, this.height, this.number_mines);
+  this.new_game(this.width, this.height, this.number_mines, true);
+}
+arcade.minesweeper.prototype.start_timer = function() {
+  if(this.timer_interval || !this.timer) return;
+  var timer = this.timer;
+  // Show the running state immediately; waiting for the first one-second
+  // interval made the first click appear unresponsive.
+  timer.increment();
+  this.timer_interval = setInterval(function() { timer.increment(); }, 1000);
 }
 arcade.minesweeper.prototype.stop_timer = function() {
   if(this.timer_interval) {
@@ -144,17 +154,38 @@ $.ready(function() {
   var minesweeper = new arcade.minesweeper($("#play_area"));
   // Kept public for the automation bridge. Normal gameplay does not use it.
   window.minesweeperGame = minesweeper;
-  minesweeper.new_game(16, 16, 40);
+  var levels = {
+    beginner: { width: 9, height: 9, mines: 10 },
+    intermediate: { width: 16, height: 16, mines: 40 },
+    expert: { width: 30, height: 16, mines: 99 }
+  };
+  var selectedLevel = "beginner";
 
-  $("#button_beginner").addEventListener("click", function() {
-    minesweeper.new_game(9, 9, 10);
+  function selectLevel(levelId) {
+    var level = levels[levelId];
+    if (!level) return false;
+    selectedLevel = levelId;
+    window.__jevSelectedLevel = levelId;
+    Object.keys(levels).forEach(function(id) {
+      var button = $("#button_" + id);
+      button[0].setAttribute("aria-pressed", id === levelId ? "true" : "false");
+    });
+    minesweeper.new_game(level.width, level.height, level.mines, false);
+    return true;
+  }
+
+  window.getSelectedLevel = function() { return selectedLevel; };
+  window.startSelectedGame = function() {
+    minesweeper.restart();
+    return selectedLevel;
+  };
+
+  Object.keys(levels).forEach(function(levelId) {
+    $("#button_" + levelId).addEventListener("click", function() {
+      selectLevel(levelId);
+    });
   });
-  $("#button_intermediate").addEventListener("click", function() {
-    minesweeper.new_game(16, 16, 40);
-  });
-  $("#button_expert").addEventListener("click", function() {
-    minesweeper.new_game(30, 16, 99);
-  });
+  selectLevel(selectedLevel);
 
   $(document)
     .addEventListener("mousedown", function(e) {

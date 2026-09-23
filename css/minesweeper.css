@@ -48,6 +48,12 @@ body {
   font-family: inherit;
 }
 
+#level_buttons button[aria-pressed="true"] {
+  background: #316ac5;
+  color: #fff;
+  box-shadow: inset 1px 1px 2px #1f4380;
+}
+
 #button_rerun {
   font-weight: bold;
 }

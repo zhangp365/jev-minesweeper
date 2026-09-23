@@ -32,6 +32,8 @@ node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟
 
 `--level` 可选 `beginner` / `intermediate` / `expert`，省略则三个等级连打。`--verify` 每个等级只执行一次已知安全的真实 DOM 点击，不调用模型。正式 provider 对局会自动中心开局、给推导出的确定雷插旗、在只剩一个候选时本地直选，直到通关、踩雷或达到步数上限；模型决策具有概率性，不保证每局通关。
 
+页面中点击等级只会选中并准备一个未开始的棋盘，不会启动计时；点击 **Replay** 才会开始当前选中的等级。等待期间再次点击 **Replay**，会从当前选中的等级重新开始。
+
 如果上次运行被中断，固定的 Playwright 会话可能仍停留在旧页面。普通命令现在会自动关闭旧会话；只有确实要继续已有浏览器会话时才使用 `--reuse-session`。
 
 ## 配置 config/providers.yaml

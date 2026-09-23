@@ -65,9 +65,11 @@
     if (!rerun || rerun.__jevBound) return;
     rerun.__jevBound = true;
     rerun.addEventListener("click", function () {
-      // Reset the current level immediately, then let the runner start the
-      // next configured game without requiring a level button click.
-      if (window.minesweeperGame && typeof window.minesweeperGame.restart === "function") {
+      // Replay the currently selected level. Level buttons only select and
+      // prepare an idle board; this is the action that starts the timer.
+      if (typeof window.startSelectedGame === "function") {
+        window.startSelectedGame();
+      } else if (window.minesweeperGame && typeof window.minesweeperGame.restart === "function") {
         window.minesweeperGame.restart();
       }
       window.__jevRerun = true;

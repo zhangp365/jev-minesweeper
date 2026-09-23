@@ -67,6 +67,9 @@ const transcript = { mode: isVerify ? "verify" : null, provider: null, startedAt
 
 let provider = null;
 let providerModel = null;
+let providerModels = null;
+const providers = {};
+const providerOptions = [];
 if (!isVerify) {
   const config = loadLlmConfig(configPath);
   const providerName = (providerArgument || config.defaultProvider || "jev").toLowerCase();
@@ -74,16 +77,28 @@ if (!isVerify) {
     throw new Error(`未知 provider：${providerName}（可选：${PROVIDER_NAMES.join("、")}）`);
   }
   const postJson = await createJsonPoster({ proxyUrl: config.request.proxyUrl, attempts: config.request.attempts });
-  if (providerName === "jev") {
-    const apiKey = resolveJevApiKey(config.jev.apiKey);
-    if (!apiKey) throw new Error("Jev 需要密钥：设置 TYPESAFE_API_KEY / JEV_API_KEY，或在 config/providers.yaml 的 jev.api_key 配置。");
-    provider = createJevProvider({ ...config.jev, apiKey, postJson });
+  // Create every usable provider: the page dropdown offers all of them, and
+  // a selection made during the review window applies to the next game.
+  const jevApiKey = resolveJevApiKey(config.jev.apiKey);
+  if (jevApiKey) {
+    providers.jev = createJevProvider({ ...config.jev, apiKey: jevApiKey, postJson });
+    providerOptions.push({ id: "jev", label: `Jev（模型 ${config.jev.model}）` });
   } else {
-    const configApiKey = config.openai.apiKey || process.env[config.openai.apiKeyEnv];
-    if (!configApiKey) throw new Error(`OpenAI 兼容接口需要密钥：在 config/providers.yaml 的 openai.api_key 填写，或设置环境变量 ${config.openai.apiKeyEnv}。`);
-    provider = createOpenAIProvider({ ...config.openai, apiKey: configApiKey, postJson });
+    console.log("未找到 Jev 密钥，跳过 jev 决策方。");
   }
-  providerModel = providerName === "jev" ? config.jev.model : config.openai.model;
+  const openaiApiKey = config.openai.apiKey || process.env[config.openai.apiKeyEnv];
+  if (openaiApiKey) {
+    providers.openai = createOpenAIProvider({ ...config.openai, apiKey: openaiApiKey, postJson });
+    providerOptions.push({ id: "openai", label: `OpenAI 兼容（模型 ${config.openai.model}）` });
+  } else {
+    console.log("未找到 OpenAI 兼容密钥，跳过 openai 决策方。");
+  }
+  provider = providers[providerName];
+  if (!provider) {
+    throw new Error(`决策方 ${providerName} 不可用（缺少密钥或配置）。当前可用：${Object.keys(providers).join("、") || "无"}`);
+  }
+  providerModels = { jev: config.jev.model, openai: config.openai.model };
+  providerModel = providerModels[providerName];
   transcript.mode = providerName;
   transcript.provider = provider.name;
   console.log(`决策提供方：${provider.name}（模型 ${providerModel}）。`);
@@ -349,19 +364,27 @@ async function playLevel(level) {
   return { level: level.name, mode: transcript.mode, provider: provider.name, moves, elapsedMs: Math.round(performance.now() - started), cleared: result.cleared, exploded: result.exploded, stepLimitReached: !result.cleared && !result.exploded && moves.length === maxSteps };
 }
 
+// Review window between games: poll the page for the 重跑 button and the
+// provider dropdown. Returns { rerun, providerName } — rerun true means the
+// user asked for another game with providerName as the decision provider.
 async function waitForReviewOrClose() {
-  if (!reviewMs) return;
+  if (!reviewMs) return { rerun: false, providerName: null };
   const deadline = Date.now() + reviewMs;
-  console.log(`运行结束：浏览器会保留最多 ${Math.ceil(reviewMs / 1000)} 秒；手动关闭浏览器即可立即结束。`);
+  console.log(`运行结束：浏览器保留最多 ${Math.ceil(reviewMs / 1000)} 秒——页面「重跑」按钮可再来一局（下拉框切换决策方，下一局生效），手动关闭浏览器立即结束。`);
   while (Date.now() < deadline) {
-    await delay(Math.min(3_000, deadline - Date.now()));
+    await delay(Math.min(3000, deadline - Date.now()));
     try {
-      cli("eval", "() => document.readyState");
+      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); return { rerun: window.__jevRerun === true, provider: s && !s.hidden ? s.value : null }; })()`);
+      if (state.rerun) {
+        cli("eval", "() => (window.__jevRerun = false, true)");
+        return { rerun: true, providerName: state.provider };
+      }
     } catch {
       console.log("检测到浏览器已手动关闭。");
-      return;
+      return { rerun: false, providerName: null };
     }
   }
+  return { rerun: false, providerName: null };
 }
 
 if (!isVerify && !provider) throw new Error("provider 初始化失败");
@@ -394,13 +417,38 @@ try {
   } else {
     cli("resize", "1280", "820");
   }
-  for (const level of levelsToPlay) {
-    const result = await playLevel(level);
-    report.levels.push(result);
-    const outcome = result.cleared ? "cleared" : result.exploded ? "mine" : `stopped (步数上限 ${maxSteps}，可用 JEV_MAX_STEPS 调整)`;
-    console.log(`${result.level}: ${outcome} in ${result.elapsedMs} ms`);
+  if (provider) {
+    // The page may still be loading when the browser session is ready;
+    // window.jevPanel exists as soon as the head scripts run, so also wait
+    // for the body elements before pushing the provider options.
+    for (let attempt = 0; attempt < 30; attempt++) {
+      try {
+        const pushed = readJson(`(() => { if (!window.jevPanel || !window.jevPanel.setProviders) return false; if (!document.getElementById('jev_provider_select') || !document.getElementById('button_beginner')) return false; window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); return true; })()`);
+        if (pushed) break;
+      } catch { /* page not ready yet */ }
+      await delay(500);
+    }
   }
-  await waitForReviewOrClose();
+  let rerun = true;
+  while (rerun) {
+    rerun = false;
+    for (const level of levelsToPlay) {
+      const result = await playLevel(level);
+      report.levels.push(result);
+      const outcome = result.cleared ? "cleared" : result.exploded ? "mine" : `stopped (步数上限 ${maxSteps}，可用 JEV_MAX_STEPS 调整)`;
+      console.log(`${result.level}: ${outcome} in ${result.elapsedMs} ms`);
+    }
+    if (provider) {
+      const action = await waitForReviewOrClose();
+      rerun = action.rerun;
+      if (rerun && action.providerName && providers[action.providerName] && action.providerName !== transcript.mode) {
+        transcript.mode = action.providerName;
+        provider = providers[action.providerName];
+        providerModel = providerModels[action.providerName];
+        console.log(`切换决策方：${provider.name}（模型 ${providerModel}）。`);
+      }
+    }
+  }
 } finally {
   report.finishedAt = new Date().toISOString();
   await saveTranscript();

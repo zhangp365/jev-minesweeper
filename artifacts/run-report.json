@@ -1,13 +1,13 @@
 {
-  "mode": "jev",
-  "provider": "jev",
-  "startedAt": "2026-09-23T02:54:20.836Z",
-  "resultFile": "result/jev-2026-09-23T02-54-20-836Z.json",
+  "mode": "openai",
+  "provider": "openai",
+  "startedAt": "2026-09-23T03:09:22.631Z",
+  "resultFile": "result/jev-2026-09-23T03-09-22-631Z.json",
   "levels": [
     {
       "level": "Beginner",
-      "mode": "jev",
-      "provider": "jev",
+      "mode": "openai",
+      "provider": "openai",
       "moves": [
         {
           "step": 1,
@@ -15,40 +15,42 @@
           "x": 4,
           "y": 4,
           "timings": {
-            "boardReadMs": 619,
+            "boardReadMs": 604,
             "modelRequestMs": 0,
-            "playwrightClickMs": 635,
-            "stateReadAndPanelMs": 616,
-            "turnTotalMs": 1870
+            "playwrightClickMs": 637,
+            "stateReadAndPanelMs": 635,
+            "turnTotalMs": 1875
           }
         },
         {
           "step": 2,
-          "source": "jev",
-          "provider": "jev",
-          "x": 3,
-          "y": 4,
-          "confidence": 0.19,
+          "source": "openai",
+          "provider": "openai",
+          "x": 0,
+          "y": 2,
+          "confidence": 0.95,
           "usage": {
-            "input_tokens": 1127,
-            "output_tokens": 128
+            "prompt_tokens": 856,
+            "completion_tokens": 56,
+            "total_tokens": 912
           },
-          "model": "jev-1.13.0",
+          "model": "deepseek-v4.1-flash",
+          "autoFlagged": 4,
           "timings": {
             "boardReadMs": 0,
-            "autoFlagMs": 1,
-            "modelRequestMs": 780,
-            "playwrightClickMs": 626,
-            "stateReadAndPanelMs": 607,
-            "turnTotalMs": 2015
+            "autoFlagMs": 3158,
+            "modelRequestMs": 2756,
+            "playwrightClickMs": 624,
+            "stateReadAndPanelMs": 618,
+            "turnTotalMs": 7157
           }
         }
       ],
-      "elapsedMs": 4496,
+      "elapsedMs": 9666,
       "cleared": false,
       "exploded": false,
       "stepLimitReached": true
     }
   ],
-  "finishedAt": "2026-09-23T02:55:12.849Z"
+  "finishedAt": "2026-09-23T03:12:08.646Z"
 }

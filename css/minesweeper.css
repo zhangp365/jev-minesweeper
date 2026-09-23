@@ -37,7 +37,15 @@ body {
 }
 
 #level_buttons button {
-  width: 108px;
+  width: 128px;
+  padding: 7px 0;
+  margin: 0 4px;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+#button_rerun {
+  font-weight: bold;
 }
 
 #play_area {
@@ -76,12 +84,21 @@ body {
 
 #jev_provider {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin: 0 0 8px;
   padding: 6px 8px;
   background: #d4d0c8;
   border: 1px inset #808080;
   font-weight: bold;
   font-size: 13px;
+}
+
+#jev_provider_select {
+  max-width: 55%;
+  font: 12px/1.4 Tahoma, "Microsoft YaHei UI", "Microsoft YaHei", SimSun, Arial, sans-serif;
 }
 
 #jev_status {

@@ -2,7 +2,7 @@
 // criteria) is fixed by the Jev schema; criteria values carry each candidate's
 // neighbourhood so Jev can judge locally.
 import { execFileSync } from "node:child_process";
-import { describeCandidate } from "../board-analysis.mjs";
+import { neighborSummary } from "../board-analysis.mjs";
 
 // Key precedence: YAML api_key > process env > Windows machine-scoped env.
 // A machine-scoped variable is not automatically inherited by a long-lived
@@ -28,7 +28,7 @@ export function createJevProvider({ endpoint, model, apiKey, postJson }) {
       // Jev's choice schema requires criteria to be a dictionary. The coordinate
       // keys identify the choices; each value describes that candidate's immediate
       // neighbourhood so Jev can judge it without rescanning the whole board.
-      const criteria = Object.fromEntries(candidates.map((cell) => [`${cell.x},${cell.y}`, describeCandidate(board, cell, knownMines)]));
+      const criteria = Object.fromEntries(candidates.map((cell) => [`${cell.x},${cell.y}`, neighborSummary(board, cell.x, cell.y, knownMines)]));
       const requestPayload = {
         model,
         state: {

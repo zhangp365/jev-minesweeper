@@ -28,15 +28,6 @@ export function neighborSummary(board, x, y, knownMines) {
   return `numbers: ${numbers.join(" ") || "none"}; confirmed mines: ${mines.join(" ") || "none"}`;
 }
 
-// Full candidate description shared by every provider: neighbourhood facts
-// plus the heuristic risk estimated from the visible number constraints, so
-// models can compare candidates without redoing the arithmetic.
-export function describeCandidate(board, cell, knownMines) {
-  const parts = [neighborSummary(board, cell.x, cell.y, knownMines), `risk≈${cell.risk}`];
-  if (cell.forcedSafe) parts.push("PROVEN SAFE");
-  return parts.join("; ");
-}
-
 // Rank covered cells into a focused candidate list and deduce the mines that
 // are forced by satisfied number constraints. Uses only player-visible state.
 export function rankedCandidates(board, candidateLimit) {
@@ -78,7 +69,6 @@ export function rankedCandidates(board, candidateLimit) {
     return {
       ...cell,
       risk: Number(risk.toFixed(3)),
-      forcedSafe: knownSafe.has(key),
       adjacentNumber: adjacentNumber.get(key) ?? null,
       distanceFromCenter: Math.abs(cell.x - centerX) + Math.abs(cell.y - centerY)
     };

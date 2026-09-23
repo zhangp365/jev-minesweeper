@@ -1,8 +1,300 @@
 {
   "mode": "openai",
   "provider": "openai",
-  "startedAt": "2026-09-22T14:08:27.624Z",
-  "resultFile": "result/jev-2026-09-22T14-08-27-624Z.json",
-  "levels": [],
-  "finishedAt": "2026-09-22T14:10:20.731Z"
+  "startedAt": "2026-09-23T01:27:20.802Z",
+  "resultFile": "result/jev-2026-09-23T01-27-20-802Z.json",
+  "levels": [
+    {
+      "level": "Beginner",
+      "mode": "openai",
+      "provider": "openai",
+      "moves": [
+        {
+          "step": 1,
+          "source": "opening",
+          "x": 4,
+          "y": 4,
+          "timings": {
+            "boardReadMs": 606,
+            "modelRequestMs": 0,
+            "playwrightClickMs": 617,
+            "stateReadAndPanelMs": 621,
+            "turnTotalMs": 1844
+          }
+        },
+        {
+          "step": 2,
+          "source": "openai",
+          "provider": "openai",
+          "x": 4,
+          "y": 3,
+          "confidence": 0.66,
+          "usage": {
+            "prompt_tokens": 641,
+            "completion_tokens": 48,
+            "total_tokens": 689
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 2,
+            "modelRequestMs": 2350,
+            "playwrightClickMs": 615,
+            "stateReadAndPanelMs": 621,
+            "turnTotalMs": 3589
+          }
+        },
+        {
+          "step": 3,
+          "source": "openai",
+          "provider": "openai",
+          "x": 4,
+          "y": 5,
+          "confidence": 0.5,
+          "usage": {
+            "prompt_tokens": 676,
+            "completion_tokens": 69,
+            "total_tokens": 745
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1563,
+            "playwrightClickMs": 616,
+            "stateReadAndPanelMs": 599,
+            "turnTotalMs": 2778
+          }
+        },
+        {
+          "step": 4,
+          "source": "openai",
+          "provider": "openai",
+          "x": 4,
+          "y": 2,
+          "confidence": 0.5,
+          "usage": {
+            "prompt_tokens": 701,
+            "completion_tokens": 73,
+            "total_tokens": 774
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1944,
+            "playwrightClickMs": 618,
+            "stateReadAndPanelMs": 602,
+            "turnTotalMs": 3165
+          }
+        },
+        {
+          "step": 5,
+          "source": "openai",
+          "provider": "openai",
+          "x": 3,
+          "y": 2,
+          "confidence": 0.65,
+          "usage": {
+            "prompt_tokens": 720,
+            "completion_tokens": 37,
+            "total_tokens": 757
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 2055,
+            "playwrightClickMs": 624,
+            "stateReadAndPanelMs": 602,
+            "turnTotalMs": 3281
+          }
+        },
+        {
+          "step": 6,
+          "source": "openai",
+          "provider": "openai",
+          "x": 4,
+          "y": 1,
+          "confidence": 0.9,
+          "usage": {
+            "prompt_tokens": 703,
+            "completion_tokens": 43,
+            "total_tokens": 746
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1974,
+            "playwrightClickMs": 645,
+            "stateReadAndPanelMs": 601,
+            "turnTotalMs": 3221
+          }
+        },
+        {
+          "step": 7,
+          "source": "openai",
+          "provider": "openai",
+          "x": 4,
+          "y": 0,
+          "confidence": 0.9,
+          "usage": {
+            "prompt_tokens": 686,
+            "completion_tokens": 59,
+            "total_tokens": 745
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1979,
+            "playwrightClickMs": 632,
+            "stateReadAndPanelMs": 604,
+            "turnTotalMs": 3216
+          }
+        },
+        {
+          "step": 8,
+          "source": "openai",
+          "provider": "openai",
+          "x": 3,
+          "y": 5,
+          "confidence": 0.85,
+          "usage": {
+            "prompt_tokens": 779,
+            "completion_tokens": 40,
+            "total_tokens": 819
+          },
+          "model": "deepseek-v4.1-flash",
+          "autoFlagged": 2,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 1867,
+            "modelRequestMs": 2550,
+            "playwrightClickMs": 633,
+            "stateReadAndPanelMs": 607,
+            "turnTotalMs": 5658
+          }
+        },
+        {
+          "step": 9,
+          "source": "openai",
+          "provider": "openai",
+          "x": 6,
+          "y": 3,
+          "confidence": 0.78,
+          "usage": {
+            "prompt_tokens": 775,
+            "completion_tokens": 42,
+            "total_tokens": 817
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1732,
+            "playwrightClickMs": 613,
+            "stateReadAndPanelMs": 607,
+            "turnTotalMs": 2953
+          }
+        },
+        {
+          "step": 10,
+          "source": "openai",
+          "provider": "openai",
+          "x": 8,
+          "y": 3,
+          "confidence": 0.4,
+          "usage": {
+            "prompt_tokens": 791,
+            "completion_tokens": 43,
+            "total_tokens": 834
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1988,
+            "playwrightClickMs": 629,
+            "stateReadAndPanelMs": 605,
+            "turnTotalMs": 3223
+          }
+        },
+        {
+          "step": 11,
+          "source": "openai",
+          "provider": "openai",
+          "x": 3,
+          "y": 3,
+          "confidence": 0.95,
+          "usage": {
+            "prompt_tokens": 825,
+            "completion_tokens": 41,
+            "total_tokens": 866
+          },
+          "model": "deepseek-v4.1-flash",
+          "autoFlagged": 3,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 2479,
+            "modelRequestMs": 2523,
+            "playwrightClickMs": 621,
+            "stateReadAndPanelMs": 602,
+            "turnTotalMs": 6225
+          }
+        },
+        {
+          "step": 12,
+          "source": "openai",
+          "provider": "openai",
+          "x": 1,
+          "y": 7,
+          "confidence": 0.9,
+          "usage": {
+            "prompt_tokens": 790,
+            "completion_tokens": 66,
+            "total_tokens": 856
+          },
+          "model": "deepseek-v4.1-flash",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 1237,
+            "modelRequestMs": 1890,
+            "playwrightClickMs": 628,
+            "stateReadAndPanelMs": 605,
+            "turnTotalMs": 4360
+          }
+        },
+        {
+          "step": 13,
+          "source": "openai",
+          "provider": "openai",
+          "x": 0,
+          "y": 8,
+          "confidence": 0.85,
+          "usage": {
+            "prompt_tokens": 788,
+            "completion_tokens": 39,
+            "total_tokens": 827
+          },
+          "model": "deepseek-v4.1-flash",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1935,
+            "playwrightClickMs": 620,
+            "stateReadAndPanelMs": 602,
+            "turnTotalMs": 3157
+          }
+        }
+      ],
+      "elapsedMs": 47292,
+      "cleared": false,
+      "exploded": true,
+      "stepLimitReached": false
+    }
+  ],
+  "finishedAt": "2026-09-23T01:28:10.047Z"
 }

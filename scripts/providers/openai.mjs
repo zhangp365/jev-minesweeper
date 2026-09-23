@@ -1,7 +1,7 @@
 // OpenAI-compatible chat-completions provider (OpenAI, vLLM, one-api, ...).
 // The prompt demands a strict JSON answer; LLM output is still parsed
 // defensively because models routinely wrap JSON in prose or code fences.
-import { describeCandidate } from "../board-analysis.mjs";
+import { neighborSummary } from "../board-analysis.mjs";
 
 // Best-effort JSON extraction: plain JSON > fenced block > first {...} span >
 // repaired span (trailing commas, curly quotes). Throws when nothing parses.
@@ -140,7 +140,7 @@ export function createOpenAIProvider({ baseUrl, model, apiKey, temperature = 0, 
 
 function buildPrompt({ board, candidates, knownMines, level, step }) {
   const rows = board.rows.map((row, y) => `y=${y}: ${row.split("").join(" ")}`).join("\n");
-  const candidateLines = candidates.map((cell) => `(${cell.x},${cell.y}) ${describeCandidate(board, cell, knownMines)}`).join("\n");
+  const candidateLines = candidates.map((cell) => `(${cell.x},${cell.y}) ${neighborSummary(board, cell.x, cell.y, knownMines)}`).join("\n");
   return [
     `这是一局扫雷游戏：${level.name}，棋盘 ${board.width}x${board.height}，共 ${board.mines} 颗雷，已插旗 ${board.flaggedCount} 颗，当前第 ${step + 1} 步。`,
     "棋盘记号：#=未翻开，F=插旗，.=已翻开的 0，1-8=相邻雷数。行自上而下为 y=0 到 " + (board.height - 1) + "，列自左向右为 x=0 到 " + (board.width - 1) + "。",
@@ -152,9 +152,9 @@ function buildPrompt({ board, candidates, knownMines, level, step }) {
     candidateLines,
     "",
     "推理要求：",
-    "1. 若某候选标记了 PROVEN SAFE，它由数字约束证明无雷，直接选它。",
-    "2. 否则比较各候选的 risk 估计值（基于可见数字约束估算的踩雷概率，纯启发式），优先选 risk 最低的。",
-    "3. risk 相近时，优先与已翻开数字相邻的候选；「邻域无数字」的盲选格不确定性最大，最后才考虑。", "",
+    "1. 结合棋盘与每个候选邻域里的数字，自行推理是否存在必然无雷的候选；能推理出来就选它。",
+    "2. 无法确定时，结合剩余雷数（总雷数减已插旗）与各候选周围未知格数量，自行估算每个候选的踩雷概率，选最低的。",
+    "3. 概率相近时，优先与已翻开数字相邻的候选；「邻域无数字」的盲选格不确定性最大，最后才考虑。", "",
     "输出要求：只输出一个 JSON 对象，不要输出任何其他文字、解释或 Markdown 代码块，格式：",
     JSON_FORMAT_HINT,
     "其中 choice 必须取自上面的候选列表，confidence 是你对“该格无雷”的把握程度。"

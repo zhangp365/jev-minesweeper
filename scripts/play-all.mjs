@@ -39,9 +39,9 @@ const externalServer = process.argv.includes("--external-server");
 const levelArgument = process.argv.indexOf("--level");
 const selectedLevel = levelArgument === -1 ? null : process.argv[levelArgument + 1]?.toLowerCase();
 const providerArgument = providerFromArgv();
-// Start conservatively while validating a new Playwright/provider setup.
-// Increase explicitly with JEV_MAX_STEPS once a short run has changed the board.
-const maxSteps = Number(process.env.JEV_MAX_STEPS || 5);
+// Play each level to completion by default; set JEV_MAX_STEPS to cap model
+// turns (e.g. while validating a new provider setup at minimal cost).
+const maxSteps = Number(process.env.JEV_MAX_STEPS || 999);
 const confidenceFloor = Number(process.env.JEV_MIN_CONFIDENCE || 0);
 const candidateLimit = Number(process.env.JEV_CANDIDATE_LIMIT || 12);
 const reviewMs = Math.max(0, Number(process.env.JEV_REVIEW_MS || 60_000));
@@ -397,7 +397,8 @@ try {
   for (const level of levelsToPlay) {
     const result = await playLevel(level);
     report.levels.push(result);
-    console.log(`${result.level}: ${result.cleared ? "cleared" : result.exploded ? "mine" : "stopped"} in ${result.elapsedMs} ms`);
+    const outcome = result.cleared ? "cleared" : result.exploded ? "mine" : `stopped (步数上限 ${maxSteps}，可用 JEV_MAX_STEPS 调整)`;
+    console.log(`${result.level}: ${outcome} in ${result.elapsedMs} ms`);
   }
   await waitForReviewOrClose();
 } finally {

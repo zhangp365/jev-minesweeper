@@ -36,8 +36,7 @@ export function createJevProvider({ endpoint, model, apiKey, postJson }) {
         state: {
           level: level.name,
           step: step + 1,
-          board: { width: board.width, height: board.height, mines: board.mines, rows: board.rows, notation: "#=covered, F=flagged, .=revealed zero, 1-8=adjacent mine count; rows go from y=0 downward and x=0 to the right" },
-          candidates: candidates.map(({ x, y }) => ({ x, y }))
+          board: { width: board.width, height: board.height, mines: board.mines, flaggedCount: board.flaggedCount, remainingMines: board.mines - board.flaggedCount, rows: board.rows, notation: "#=covered, F=flagged, .=revealed zero, 1-8=adjacent mine count; rows go from y=0 downward and x=0 to the right" }
         },
         questions: {
           reveal: {

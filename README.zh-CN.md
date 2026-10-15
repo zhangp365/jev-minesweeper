@@ -46,6 +46,18 @@ node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟
 | `openai.temperature` / `json_mode` | 默认 0 / true（`json_mode: false` 适配不带 `response_format` 的端点） |
 | `request.attempts` / `proxy` | 网络重试次数与代理；`JEV_REQUEST_ATTEMPTS`、`JEV_PROXY`、`HTTPS_PROXY` 等环境变量优先 |
 
+### Jev 模型版本
+
+`jev.model` 可以填别名或写死具体版本号：
+
+| 写法 | 指向 |
+| --- | --- |
+| `jev-latest` | 最新**稳定**版，目前是 `jev-1.13.0` |
+| `jev-preview` | 最新版（含预览版），目前是 `jev-1.14.0` |
+| `jev-1.13.0` / `jev-1.14.0` | 写死具体版本，行为不随官方别名漂移 |
+
+注意：页面与报告里显示的版本号来自服务端响应回传的实际版本（`response.model`），而不是本地配置里写的别名——所以用 `jev-latest` 时显示 1.13.0 属正常现象。实测 1.13 与 1.14 的扫雷表现基本相同，都还无法很好地完成扫雷，升级模型版本暂时不会带来明显改善。
+
 ## 可调环境变量
 
 ```bash

@@ -46,6 +46,18 @@ If a previous run was interrupted, the fixed Playwright session may still be ope
 | `openai.temperature` / `json_mode` | Default 0 / true (`json_mode: false` for endpoints without `response_format` support) |
 | `request.attempts` / `proxy` | Network retries and proxy; `JEV_REQUEST_ATTEMPTS`, `JEV_PROXY`, `HTTPS_PROXY` env vars take precedence |
 
+### Jev model versions
+
+`jev.model` accepts an alias or an exact version:
+
+| Value | Resolves to |
+| --- | --- |
+| `jev-latest` | Newest **stable** release, currently `jev-1.13.0` |
+| `jev-preview` | Newest release including previews, currently `jev-1.14.0` |
+| `jev-1.13.0` / `jev-1.14.0` | Pinned version; does not drift with server-side aliases |
+
+Note: the version shown on the page and in reports comes from the server's response (`response.model`) — the version that actually handled the call — not from the alias written locally, so seeing 1.13.0 while using `jev-latest` is expected. In practice 1.13 and 1.14 play about the same: neither minesweeps well yet, and bumping the model version brings no clear improvement for now.
+
 ## Environment variables
 
 ```bash

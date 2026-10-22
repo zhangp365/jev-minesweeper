@@ -9,7 +9,8 @@ const DEFAULTS = {
   jev: {
     endpoint: "https://api.typesafe.ai/v1/systemone",
     model: "jev-latest",
-    api_key: null
+    api_key: null,
+    board_image: true
   },
   openai: {
     base_url: "https://api.openai.com/v1",
@@ -49,7 +50,8 @@ export function loadLlmConfig(configPath) {
     jev: {
       endpoint: String(merged.jev.endpoint),
       model: String(merged.jev.model),
-      apiKey: merged.jev.api_key || null
+      apiKey: merged.jev.api_key || null,
+      boardImage: merged.jev.board_image !== false
     },
     openai: {
       baseUrl: String(merged.openai.base_url).replace(/\/+$/, ""),

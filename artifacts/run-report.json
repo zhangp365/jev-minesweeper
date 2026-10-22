@@ -1,33 +1,706 @@
 {
-  "mode": "verify",
-  "provider": null,
-  "startedAt": "2026-09-23T04:50:06.899Z",
-  "resultFile": "result/jev-2026-09-23T04-50-06-899Z.json",
+  "mode": "jev",
+  "provider": "jev",
+  "startedAt": "2026-10-16T12:29:36.283Z",
+  "resultFile": "result/jev-2026-10-16T12-29-36-283Z.json",
   "levels": [
     {
       "level": "Beginner",
-      "mode": "verify",
-      "moves": 1,
-      "elapsedMs": 2588,
+      "mode": "jev",
+      "provider": "jev",
+      "moves": [
+        {
+          "step": 1,
+          "source": "opening",
+          "x": 4,
+          "y": 4,
+          "timings": {
+            "boardReadMs": 0,
+            "modelRequestMs": 0,
+            "playwrightClickMs": 603,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 603
+          }
+        },
+        {
+          "step": 2,
+          "source": "jev",
+          "provider": "jev",
+          "x": 0,
+          "y": 0,
+          "confidence": 0.17,
+          "usage": {
+            "input_tokens": 1976,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 1,
+            "modelRequestMs": 1123,
+            "boardImageMs": 759,
+            "playwrightClickMs": 607,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2491
+          }
+        }
+      ],
+      "elapsedMs": 3702,
       "cleared": false,
-      "exploded": false
+      "exploded": true,
+      "stepLimitReached": false
     },
     {
-      "level": "Intermediate",
-      "mode": "verify",
-      "moves": 1,
-      "elapsedMs": 2599,
-      "cleared": false,
-      "exploded": false
+      "level": "Beginner",
+      "mode": "jev",
+      "provider": "jev",
+      "moves": [
+        {
+          "step": 1,
+          "source": "opening",
+          "x": 4,
+          "y": 4,
+          "timings": {
+            "boardReadMs": 0,
+            "modelRequestMs": 0,
+            "playwrightClickMs": 587,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 587
+          }
+        },
+        {
+          "step": 2,
+          "source": "jev",
+          "provider": "jev",
+          "x": 0,
+          "y": 0,
+          "confidence": 0.12,
+          "usage": {
+            "input_tokens": 1976,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1007,
+            "boardImageMs": 748,
+            "playwrightClickMs": 599,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2356
+          }
+        },
+        {
+          "step": 3,
+          "source": "jev",
+          "provider": "jev",
+          "x": 3,
+          "y": 2,
+          "confidence": 0.11,
+          "usage": {
+            "input_tokens": 2107,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 2,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 597,
+            "modelRequestMs": 358,
+            "boardImageMs": 753,
+            "playwrightClickMs": 595,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2302
+          }
+        },
+        {
+          "step": 4,
+          "source": "jev",
+          "provider": "jev",
+          "x": 4,
+          "y": 0,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 2110,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 595,
+            "modelRequestMs": 382,
+            "boardImageMs": 730,
+            "playwrightClickMs": 603,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2310
+          }
+        },
+        {
+          "step": 5,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 0,
+          "confidence": 0.19,
+          "usage": {
+            "input_tokens": 2109,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 359,
+            "boardImageMs": 728,
+            "playwrightClickMs": 603,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1691
+          }
+        },
+        {
+          "step": 6,
+          "source": "jev",
+          "provider": "jev",
+          "x": 3,
+          "y": 0,
+          "confidence": 0.12,
+          "usage": {
+            "input_tokens": 2136,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 5,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 615,
+            "modelRequestMs": 293,
+            "boardImageMs": 726,
+            "playwrightClickMs": 600,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2233
+          }
+        },
+        {
+          "step": 7,
+          "source": "jev",
+          "provider": "jev",
+          "x": 4,
+          "y": 3,
+          "confidence": 0.13,
+          "usage": {
+            "input_tokens": 2109,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 300,
+            "boardImageMs": 741,
+            "playwrightClickMs": 597,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1638
+          }
+        },
+        {
+          "step": 8,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 5,
+          "confidence": 0.12,
+          "usage": {
+            "input_tokens": 2066,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 299,
+            "boardImageMs": 718,
+            "playwrightClickMs": 599,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1616
+          }
+        },
+        {
+          "step": 9,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 6,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 2036,
+            "output_tokens": 119
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1102,
+            "boardImageMs": 717,
+            "playwrightClickMs": 720,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2539
+          }
+        },
+        {
+          "step": 10,
+          "source": "jev",
+          "provider": "jev",
+          "x": 7,
+          "y": 6,
+          "confidence": 0.04,
+          "usage": {
+            "input_tokens": 1990,
+            "output_tokens": 101
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 652,
+            "modelRequestMs": 292,
+            "boardImageMs": 757,
+            "playwrightClickMs": 607,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2308
+          }
+        },
+        {
+          "step": 11,
+          "source": "jev",
+          "provider": "jev",
+          "x": 8,
+          "y": 8,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 1982,
+            "output_tokens": 92
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 295,
+            "boardImageMs": 735,
+            "playwrightClickMs": 603,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1633
+          }
+        },
+        {
+          "step": 12,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 8,
+          "confidence": 0.2,
+          "usage": {
+            "input_tokens": 1875,
+            "output_tokens": 47
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 293,
+            "boardImageMs": 727,
+            "playwrightClickMs": 621,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1640
+          }
+        },
+        {
+          "step": 13,
+          "source": "jev",
+          "provider": "jev",
+          "x": 7,
+          "y": 5,
+          "confidence": 0.02,
+          "usage": {
+            "input_tokens": 1827,
+            "output_tokens": 38
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 300,
+            "boardImageMs": 736,
+            "playwrightClickMs": 601,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1636
+          }
+        }
+      ],
+      "elapsedMs": 25095,
+      "cleared": true,
+      "exploded": false,
+      "stepLimitReached": false
     },
     {
-      "level": "Expert",
-      "mode": "verify",
-      "moves": 1,
-      "elapsedMs": 2650,
+      "level": "Beginner",
+      "mode": "jev",
+      "provider": "jev",
+      "moves": [
+        {
+          "step": 1,
+          "source": "opening",
+          "x": 4,
+          "y": 4,
+          "timings": {
+            "boardReadMs": 0,
+            "modelRequestMs": 0,
+            "playwrightClickMs": 599,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 599
+          }
+        },
+        {
+          "step": 2,
+          "source": "jev",
+          "provider": "jev",
+          "x": 0,
+          "y": 0,
+          "confidence": 0.13,
+          "usage": {
+            "input_tokens": 1976,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 1298,
+            "boardImageMs": 720,
+            "playwrightClickMs": 609,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2628
+          }
+        },
+        {
+          "step": 3,
+          "source": "jev",
+          "provider": "jev",
+          "x": 8,
+          "y": 8,
+          "confidence": 0.27,
+          "usage": {
+            "input_tokens": 1986,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 295,
+            "boardImageMs": 717,
+            "playwrightClickMs": 605,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1617
+          }
+        },
+        {
+          "step": 4,
+          "source": "jev",
+          "provider": "jev",
+          "x": 8,
+          "y": 4,
+          "confidence": 0.04,
+          "usage": {
+            "input_tokens": 2060,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 2,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 611,
+            "modelRequestMs": 565,
+            "boardImageMs": 718,
+            "playwrightClickMs": 612,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2507
+          }
+        },
+        {
+          "step": 5,
+          "source": "jev",
+          "provider": "jev",
+          "x": 7,
+          "y": 3,
+          "confidence": 0.09,
+          "usage": {
+            "input_tokens": 2068,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 323,
+            "boardImageMs": 738,
+            "playwrightClickMs": 604,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1665
+          }
+        },
+        {
+          "step": 6,
+          "source": "jev",
+          "provider": "jev",
+          "x": 8,
+          "y": 3,
+          "confidence": 0.06,
+          "usage": {
+            "input_tokens": 2074,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 294,
+            "boardImageMs": 731,
+            "playwrightClickMs": 612,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1637
+          }
+        },
+        {
+          "step": 7,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 3,
+          "confidence": 0.08,
+          "usage": {
+            "input_tokens": 2070,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 302,
+            "boardImageMs": 719,
+            "playwrightClickMs": 618,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1640
+          }
+        },
+        {
+          "step": 8,
+          "source": "jev",
+          "provider": "jev",
+          "x": 2,
+          "y": 0,
+          "confidence": 0.08,
+          "usage": {
+            "input_tokens": 2061,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 610,
+            "modelRequestMs": 632,
+            "boardImageMs": 730,
+            "playwrightClickMs": 636,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2609
+          }
+        },
+        {
+          "step": 9,
+          "source": "jev",
+          "provider": "jev",
+          "x": 0,
+          "y": 8,
+          "confidence": 0.06,
+          "usage": {
+            "input_tokens": 2055,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 442,
+            "boardImageMs": 728,
+            "playwrightClickMs": 613,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1784
+          }
+        },
+        {
+          "step": 10,
+          "source": "jev",
+          "provider": "jev",
+          "x": 5,
+          "y": 0,
+          "confidence": 0.15,
+          "usage": {
+            "input_tokens": 2135,
+            "output_tokens": 128
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 3,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 605,
+            "modelRequestMs": 292,
+            "boardImageMs": 711,
+            "playwrightClickMs": 607,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2215
+          }
+        },
+        {
+          "step": 11,
+          "source": "jev",
+          "provider": "jev",
+          "x": 8,
+          "y": 0,
+          "confidence": 0.12,
+          "usage": {
+            "input_tokens": 2113,
+            "output_tokens": 110
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 596,
+            "modelRequestMs": 429,
+            "boardImageMs": 717,
+            "playwrightClickMs": 609,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2351
+          }
+        },
+        {
+          "step": 12,
+          "source": "jev",
+          "provider": "jev",
+          "x": 7,
+          "y": 0,
+          "confidence": 0.1,
+          "usage": {
+            "input_tokens": 2110,
+            "output_tokens": 101
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 344,
+            "boardImageMs": 723,
+            "playwrightClickMs": 606,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1673
+          }
+        },
+        {
+          "step": 13,
+          "source": "jev",
+          "provider": "jev",
+          "x": 4,
+          "y": 3,
+          "confidence": 0.08,
+          "usage": {
+            "input_tokens": 2058,
+            "output_tokens": 83
+          },
+          "model": "jev-1.14.0",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 604,
+            "modelRequestMs": 351,
+            "boardImageMs": 732,
+            "playwrightClickMs": 609,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 2296
+          }
+        },
+        {
+          "step": 14,
+          "source": "jev",
+          "provider": "jev",
+          "x": 8,
+          "y": 1,
+          "confidence": 0.26,
+          "usage": {
+            "input_tokens": 2005,
+            "output_tokens": 74
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 303,
+            "boardImageMs": 733,
+            "playwrightClickMs": 619,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1656
+          }
+        },
+        {
+          "step": 15,
+          "source": "jev",
+          "provider": "jev",
+          "x": 3,
+          "y": 8,
+          "confidence": 0.04,
+          "usage": {
+            "input_tokens": 1981,
+            "output_tokens": 65
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 300,
+            "boardImageMs": 729,
+            "playwrightClickMs": 619,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1648
+          }
+        },
+        {
+          "step": 16,
+          "source": "jev",
+          "provider": "jev",
+          "x": 6,
+          "y": 2,
+          "confidence": 0.08,
+          "usage": {
+            "input_tokens": 1934,
+            "output_tokens": 56
+          },
+          "model": "jev-1.14.0",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "modelRequestMs": 303,
+            "boardImageMs": 736,
+            "playwrightClickMs": 609,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 1649
+          }
+        }
+      ],
+      "elapsedMs": 30796,
       "cleared": false,
-      "exploded": false
+      "exploded": true,
+      "stepLimitReached": false
     }
   ],
-  "finishedAt": "2026-09-23T04:50:17.315Z"
+  "finishedAt": "2026-10-16T12:31:46.410Z"
 }

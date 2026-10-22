@@ -13,7 +13,7 @@
  * instructions, board state, candidate ranking, and move shape; only their
  * API request/output wrappers differ.
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { execFileSync, spawn } from "node:child_process";
@@ -21,12 +21,14 @@ import { fileURLToPath } from "node:url";
 import { loadLlmConfig, PROVIDER_NAMES } from "./config.mjs";
 import { createJsonPoster } from "./http.mjs";
 import { rankedCandidates } from "./board-analysis.mjs";
+import { MIN_SIDE, MIN_TOTAL_PIXELS, normalizeBoardScale, readPngDimensions } from "./board-image.mjs";
 import { createJevProvider, resolveJevApiKey } from "./providers/jev.mjs";
 import { createOpenAIProvider } from "./providers/openai.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const artifacts = join(root, "artifacts");
 const resultDir = join(root, "result");
+const boardSnapshotPath = join(resultDir, "board-snapshot.png");
 const configPath = join(root, "config", "providers.yaml");
 const playwrightConfigPath = join(root, ".playwright", "cli.config.json");
 const port = Number(process.env.MINESWEEPER_PORT || 4173);
@@ -72,6 +74,7 @@ const transcript = { mode: isVerify ? "verify" : null, provider: null, startedAt
 
 let provider = null;
 let providerModel = null;
+let boardImageEnabled = false;
 let providerModels = null;
 const providers = {};
 const providerOptions = [];
@@ -104,6 +107,7 @@ if (!isVerify) {
   }
   providerModels = { jev: config.jev.model, openai: config.openai.model };
   providerModel = providerModels[providerName];
+  boardImageEnabled = config.jev.boardImage !== false;
   transcript.mode = providerName;
   transcript.provider = provider.name;
   console.log(`Provider: ${provider.name} (model ${providerModel}).`);
@@ -318,14 +322,65 @@ function forcedCandidateMove(candidate) {
   };
 }
 
+// Screenshot the board table for the Jev image input. The page's own
+// fit-to-window scale is the largest COMPLETE board the layout can show, so
+// it is kept whenever it already satisfies the API's image limits; only an
+// out-of-range scale is clamped (and restored after the shot). cli() is
+// synchronous, so this blocks for two or three CLI launches.
+// The play area holds several layout tables and one stale grid copy nested
+// in a td; the active board is the direct-child table that owns td#cell-*.
+const boardTableSelector = "#play_area > table:has(td#cell-0-0)";
+function captureBoardImage() {
+  const current = readJson(`(() => {
+    const table = document.querySelector(${JSON.stringify(boardTableSelector)});
+    if (!table) return null;
+    const naturalWidth = table.offsetWidth;
+    const naturalHeight = table.offsetHeight;
+    if (!naturalWidth || !naturalHeight) return null;
+    const matrix = getComputedStyle(table).transform.match(/matrix\\(([^)]+)\\)/);
+    const scale = matrix ? Math.abs(parseFloat(matrix[1].split(",")[0])) || 1 : 1;
+    return { naturalWidth, naturalHeight, scale, inlineTransform: table.style.transform || "" };
+  })()`);
+  if (!current) throw new Error("Board table not found for the screenshot");
+  const { scale, adjusted } = normalizeBoardScale(current.naturalWidth, current.naturalHeight, current.scale);
+  let transformTouched = false;
+  if (adjusted) {
+    cli("eval", `() => { const table = document.querySelector(${JSON.stringify(boardTableSelector)}); table.style.transform = "scale(${scale})"; return true; }`);
+    transformTouched = true;
+  }
+  try {
+    cli("screenshot", boardTableSelector, `--filename=${boardSnapshotPath}`);
+    const png = readFileSync(boardSnapshotPath);
+    const { width, height } = readPngDimensions(png);
+    if (width < MIN_SIDE || height < MIN_SIDE || width > 1568 || height > 1568 || width * height < MIN_TOTAL_PIXELS) {
+      throw new Error(`Board screenshot is ${width}x${height}, outside the API's image limits`);
+    }
+    return { base64: png.toString("base64"), width, height };
+  } finally {
+    if (transformTouched) {
+      cli("eval", `() => { const table = document.querySelector(${JSON.stringify(boardTableSelector)}); table.style.transform = ${JSON.stringify(current.inlineTransform)}; return true; }`);
+    }
+  }
+}
+
 // Every provider returns the same move shape; game rules (legal candidate,
 // confidence floor) are enforced here once, independent of the provider.
 async function chooseMove(board, level, step) {
   const { cells: candidates, knownMines } = rankedCandidates(board, candidateLimit);
   if (!candidates.length) throw new Error("No covered cells remain");
+  // The rendered board snapshot rides along only on real model turns; local
+  // forced choices never spend three CLI launches on a screenshot.
+  let snapshot = null;
+  let boardImageMs = 0;
+  if (candidates.length > 1 && provider.name === "jev" && boardImageEnabled) {
+    const captureStarted = performance.now();
+    snapshot = captureBoardImage();
+    boardImageMs = Math.round(performance.now() - captureStarted);
+  }
   const move = candidates.length === 1
     ? forcedCandidateMove(candidates[0])
-    : await provider.choose({ board, candidates, knownMines, level, step });
+    : await provider.choose({ board, candidates, knownMines, level, step, boardImage: snapshot });
+  move.boardImageMs = boardImageMs;
   if (!candidates.some((cell) => cell.x === move.x && cell.y === move.y)) {
     throw new Error(`${provider.name} returned a cell outside the candidate list (${move.x},${move.y})`);
   }
@@ -443,7 +498,7 @@ async function playLevel(level, { alreadyStarted = false } = {}) {
     currentBoard = board;
     const autoFlagMs = Math.round(performance.now() - autoFlagStarted);
     const move = await chooseMove(board, level, step);
-    const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, playwrightClickMs: 0 };
+    const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, boardImageMs: move.boardImageMs || 0, playwrightClickMs: 0 };
     const panelReadStarted = performance.now();
     const chooserLabel = move.source === "single-candidate" ? "local forced choice" : `${provider.name} (${move.model})`;
     const afterClick = clickAndRenderPanel(move.x, move.y, {

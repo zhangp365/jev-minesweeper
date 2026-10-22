@@ -42,6 +42,7 @@ If a previous run was interrupted, the fixed Playwright session may still be ope
 | --- | --- |
 | `default_provider` | `jev` or `openai`; the `--provider` flag wins |
 | `jev.endpoint` / `model` / `api_key` | With an empty key, the env vars `TYPESAFE_API_KEY` and `JEV_API_KEY` are used |
+| `jev.board_image` | Default true: screenshots the board each turn and sends it with the request (image input); set false to disable |
 | `openai.base_url` / `model` / `api_key` | Any OpenAI-compatible endpoint; `api_key` may alternatively point at an env var via `api_key_env` |
 | `openai.temperature` / `json_mode` | Default 0 / true (`json_mode: false` for endpoints without `response_format` support) |
 | `request.attempts` / `proxy` | Network retries and proxy; `JEV_REQUEST_ATTEMPTS`, `JEV_PROXY`, `HTTPS_PROXY` env vars take precedence |

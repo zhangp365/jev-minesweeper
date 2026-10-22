@@ -8,6 +8,7 @@ jev:                         # Jev choice 接口（密钥推荐走环境变量�
   endpoint: https://api.typesafe.ai/v1/systemone
   model: jev-latest
   # api_key: 留空则依次读取环境变量 TYPESAFE_API_KEY / JEV_API_KEY（含 Windows 机器级变量）
+  board_image: true          # 每步把棋盘截图随请求发给 Jev（图像输入）；设为 false 关闭
 
 openai:                      # 任意 OpenAI 兼容接口（OpenAI / vLLM / one-api 等）
   base_url: https://api.openai.com/v1

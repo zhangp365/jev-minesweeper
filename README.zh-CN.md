@@ -42,6 +42,7 @@ node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟
 | --- | --- |
 | `default_provider` | `jev` 或 `openai`，命令行 `--provider` 优先 |
 | `jev.endpoint` / `model` / `api_key` | 密钥留空时读环境变量 `TYPESAFE_API_KEY`、`JEV_API_KEY` |
+| `jev.board_image` | 默认 true：每步截图棋盘随请求发给 Jev（图像输入）；设为 false 关闭 |
 | `openai.base_url` / `model` / `api_key` | 任意 OpenAI 兼容端点；`api_key` 也可用 `api_key_env` 指向环境变量 |
 | `openai.temperature` / `json_mode` | 默认 0 / true（`json_mode: false` 适配不带 `response_format` 的端点） |
 | `request.attempts` / `proxy` | 网络重试次数与代理；`JEV_REQUEST_ATTEMPTS`、`JEV_PROXY`、`HTTPS_PROXY` 等环境变量优先 |

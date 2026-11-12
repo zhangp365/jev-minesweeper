@@ -19,13 +19,19 @@ const DEFAULTS = {
     temperature: 0,
     json_mode: true
   },
+  gemini: {
+    endpoint: "https://generativelanguage.googleapis.com/v1beta/decisions",
+    model: "gemini-decision-1",
+    api_key: null,
+    api_key_env: "GEMINI_API_KEY"
+  },
   request: {
     attempts: 3,
     proxy: ""
   }
 };
 
-export const PROVIDER_NAMES = ["jev", "openai"];
+export const PROVIDER_NAMES = ["jev", "openai", "gemini"];
 
 export function loadLlmConfig(configPath) {
   if (!existsSync(configPath)) {
@@ -37,6 +43,7 @@ export function loadLlmConfig(configPath) {
     ...raw,
     jev: { ...DEFAULTS.jev, ...raw.jev },
     openai: { ...DEFAULTS.openai, ...raw.openai },
+    gemini: { ...DEFAULTS.gemini, ...raw.gemini },
     request: { ...DEFAULTS.request, ...raw.request }
   };
 
@@ -58,6 +65,12 @@ export function loadLlmConfig(configPath) {
       apiKeyEnv: String(merged.openai.api_key_env || "OPENAI_API_KEY"),
       temperature: Number(merged.openai.temperature ?? 0),
       jsonMode: merged.openai.json_mode !== false
+    },
+    gemini: {
+      endpoint: String(merged.gemini.endpoint),
+      model: String(merged.gemini.model),
+      apiKey: merged.gemini.api_key || null,
+      apiKeyEnv: String(merged.gemini.api_key_env || "GEMINI_API_KEY")
     },
     request: { attempts, proxyUrl }
   };

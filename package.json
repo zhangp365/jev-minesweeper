@@ -2,12 +2,13 @@
   "name": "jev-minesweeper",
   "version": "1.0.0",
   "private": true,
-  "description": "Windows XP style Minesweeper played by Jev or any OpenAI-compatible model through real DOM clicks.",
+  "description": "Windows XP style Minesweeper played by Jev, Gemini Decisions or any OpenAI-compatible model through real DOM clicks.",
   "engines": {
     "node": ">=22.19.0"
   },
   "scripts": {
-    "test": "node scripts/play-all.mjs --verify"
+    "test": "node scripts/play-all.mjs --verify",
+    "test:providers": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "undici": "^8.11.0",

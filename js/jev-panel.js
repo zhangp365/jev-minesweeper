@@ -11,6 +11,7 @@
   function providerLabel(id) {
     return id === "jev" ? "Jev"
       : id === "openai" ? "OpenAI-compatible"
+      : id === "gemini" ? "Gemini Decisions"
       : id;
   }
 

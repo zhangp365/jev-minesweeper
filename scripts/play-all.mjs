@@ -7,9 +7,10 @@
  *                     claiming an AI run.
  * --provider jev      let Jev select every reveal (default).
  * --provider openai   let any OpenAI-compatible chat model select every reveal.
+ * --provider gemini   let Gemini Decisions select every reveal.
  *
  * Provider endpoints/models/keys live in config/providers.yaml (see
- * config/providers.example.yaml). Both providers share the same decision
+ * config/providers.example.yaml). All providers share the same decision
  * instructions, board state, candidate ranking, and move shape; only their
  * API request/output wrappers differ.
  */
@@ -23,6 +24,7 @@ import { createJsonPoster } from "./http.mjs";
 import { rankedCandidates } from "./board-analysis.mjs";
 import { createJevProvider, resolveJevApiKey } from "./providers/jev.mjs";
 import { createOpenAIProvider } from "./providers/openai.mjs";
+import { createGeminiProvider, resolveGeminiApiKey } from "./providers/gemini.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const artifacts = join(root, "artifacts");
@@ -98,11 +100,18 @@ if (!isVerify) {
   } else {
     console.log("OpenAI-compatible API key not found; skipping the OpenAI-compatible provider.");
   }
+  const geminiApiKey = resolveGeminiApiKey(config.gemini.apiKey, config.gemini.apiKeyEnv);
+  if (geminiApiKey) {
+    providers.gemini = createGeminiProvider({ ...config.gemini, apiKey: geminiApiKey, postJson });
+    providerOptions.push({ id: "gemini", label: `Gemini Decisions (model ${config.gemini.model})` });
+  } else {
+    console.log("Gemini API key not found; skipping the Gemini Decisions provider (set GEMINI_API_KEY or GOOGLE_API_KEY).");
+  }
   provider = providers[providerName];
   if (!provider) {
     throw new Error(`Provider ${providerName} is unavailable (missing key or configuration). Available: ${Object.keys(providers).join(", ") || "none"}`);
   }
-  providerModels = { jev: config.jev.model, openai: config.openai.model };
+  providerModels = { jev: config.jev.model, openai: config.openai.model, gemini: config.gemini.model };
   providerModel = providerModels[providerName];
   transcript.mode = providerName;
   transcript.provider = provider.name;

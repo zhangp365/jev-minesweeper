@@ -2,7 +2,7 @@
 
 English | [简体中文](./README.zh-CN.md)
 
-An LLM-driven Minesweeper experiment: **Jev** or any **OpenAI-compatible model** plays through real Chrome DOM clicks, while the side panel shows every sanitized request and response in real time. Both providers receive the same decision instructions, board state, and candidate information; only the API request/output wrappers differ.
+An LLM-driven Minesweeper experiment: **Jev**, **Google Gemini Decisions**, or any **OpenAI-compatible model** plays through real Chrome DOM clicks, while the side panel shows every sanitized request and response in real time. All providers receive the same decision instructions, board state, and candidate information; only the API request/output wrappers differ.
 
 | Game start: safe center opening, decision panel on the right | Cleared: sunglasses face, mines auto-flagged, full request log |
 | --- | --- |
@@ -25,8 +25,10 @@ Requires Node.js 22.19+ (the `undici` dependency requirement), Google Chrome, an
 ```bash
 node scripts/play-all.mjs --provider jev --level beginner      # Jev
 node scripts/play-all.mjs --provider openai --level beginner   # OpenAI-compatible model
+node scripts/play-all.mjs --provider gemini --level beginner   # Google Gemini Decisions
 node scripts/play-all.mjs --level beginner                     # use default_provider from the yaml
 npm test                                                        # keyless smoke test for all three levels
+npm run test:providers                                           # keyless Gemini contract and config tests
 node scripts/play-all.mjs --verify --level beginner            # keyless smoke test for one level
 ```
 
@@ -40,11 +42,26 @@ If a previous run was interrupted, the fixed Playwright session may still be ope
 
 | Key | Meaning |
 | --- | --- |
-| `default_provider` | `jev` or `openai`; the `--provider` flag wins |
+| `default_provider` | `jev`, `openai`, or `gemini`; the `--provider` flag wins |
 | `jev.endpoint` / `model` / `api_key` | With an empty key, the env vars `TYPESAFE_API_KEY` and `JEV_API_KEY` are used |
 | `openai.base_url` / `model` / `api_key` | Any OpenAI-compatible endpoint; `api_key` may alternatively point at an env var via `api_key_env` |
 | `openai.temperature` / `json_mode` | Default 0 / true (`json_mode: false` for endpoints without `response_format` support) |
+| `gemini.endpoint` / `model` / `api_key` | Google `/v1beta/decisions` with `gemini-decision-1` by default; an empty key reads `GEMINI_API_KEY`, then `GOOGLE_API_KEY` |
+| `gemini.api_key_env` | Custom key environment variable, default `GEMINI_API_KEY`; YAML `api_key` wins |
 | `request.attempts` / `proxy` | Network retries and proxy; `JEV_REQUEST_ATTEMPTS`, `JEV_PROXY`, `HTTPS_PROXY` env vars take precedence |
+
+### Google Gemini Decisions
+
+Existing `providers.yaml` files work without a Gemini section: the default endpoint and model are filled in automatically. In PowerShell:
+
+```powershell
+$env:GEMINI_API_KEY = "your Google AI Studio API key" # omit if GOOGLE_API_KEY is already set
+node scripts/play-all.mjs --provider gemini --level beginner
+```
+
+You can also set `default_provider: gemini` or copy the template's `gemini` section to customize it. The provider calls the [official Decisions REST API](https://aistudio.google.com/docs/decisions-api) through the shared HTTP transport, without another SDK. The board is serialized as JSON text in `input`, candidates become options in a `choice` question, and the key is sent only in the `x-goog-api-key` header. The key's Google project needs access to the model and available quota.
+
+Gemini Decisions appears in the page dropdown when a key is configured; select it for the next Replay. Requests, responses, probabilities, model names, and timings use the existing logs. Google's `confidence` describes certainty in the winning option, not the probability that the cell is safe; `JEV_MIN_CONFIDENCE` checks that returned value. Each choice question accepts 2–255 candidates (the default candidate limit stays 12). A single remaining candidate is clicked locally.
 
 ### Jev model versions
 

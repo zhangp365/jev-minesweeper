@@ -2,7 +2,7 @@
 
 [English](./README.md) | 简体中文
 
-这是一个 LLM 扫雷实验项目：由 **Jev** 或任意 **OpenAI 兼容模型** 通过真实 Chrome DOM 点击对局，页面右侧实时显示每一步的脱敏请求与返回。两个决策方共享相同的决策指令、棋盘状态和候选信息，但分别适配各自的 API 请求与输出格式。
+这是一个 LLM 扫雷实验项目：由 **Jev**、**Google Gemini Decisions** 或任意 **OpenAI 兼容模型** 通过真实 Chrome DOM 点击对局，页面右侧实时显示每一步的脱敏请求与返回。所有决策方共享相同的决策指令、棋盘状态和候选信息，但分别适配各自的 API 请求与输出格式。
 
 | 对局开始：中心安全开局，右侧为决策面板 | 通关：墨镜脸、自动插旗、完整请求记录 |
 | --- | --- |
@@ -25,8 +25,10 @@ node scripts/play-all.mjs --provider openai --level beginner
 ```bash
 node scripts/play-all.mjs --provider jev --level beginner      # Jev 对局
 node scripts/play-all.mjs --provider openai --level beginner   # OpenAI 兼容接口对局
+node scripts/play-all.mjs --provider gemini --level beginner   # Google Gemini Decisions 对局
 node scripts/play-all.mjs --level beginner                     # 使用 yaml 里的 default_provider
 npm test                                                        # 无密钥冒烟，验证三个等级
+npm run test:providers                                           # 无密钥验证 Gemini 请求、响应和配置
 node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟，只验证一个等级
 ```
 
@@ -40,11 +42,26 @@ node scripts/play-all.mjs --verify --level beginner            # 无密钥冒烟
 
 | 配置 | 说明 |
 | --- | --- |
-| `default_provider` | `jev` 或 `openai`，命令行 `--provider` 优先 |
+| `default_provider` | `jev`、`openai` 或 `gemini`，命令行 `--provider` 优先 |
 | `jev.endpoint` / `model` / `api_key` | 密钥留空时读环境变量 `TYPESAFE_API_KEY`、`JEV_API_KEY` |
 | `openai.base_url` / `model` / `api_key` | 任意 OpenAI 兼容端点；`api_key` 也可用 `api_key_env` 指向环境变量 |
 | `openai.temperature` / `json_mode` | 默认 0 / true（`json_mode: false` 适配不带 `response_format` 的端点） |
+| `gemini.endpoint` / `model` / `api_key` | 默认调用 Google `/v1beta/decisions`，模型 `gemini-decision-1`；密钥留空读取 `GEMINI_API_KEY`，再回退到 `GOOGLE_API_KEY` |
+| `gemini.api_key_env` | 可指定其他密钥环境变量，默认 `GEMINI_API_KEY`；YAML `api_key` 优先 |
 | `request.attempts` / `proxy` | 网络重试次数与代理；`JEV_REQUEST_ATTEMPTS`、`JEV_PROXY`、`HTTPS_PROXY` 等环境变量优先 |
+
+### Google Gemini Decisions
+
+已有的 `providers.yaml` 无需补充 Gemini 配置，程序会自动使用默认端点和模型。在 PowerShell 中运行：
+
+```powershell
+$env:GEMINI_API_KEY = "你的 Google AI Studio API 密钥" # 已有 GOOGLE_API_KEY 时可省略
+node scripts/play-all.mjs --provider gemini --level beginner
+```
+
+也可在 YAML 中设置 `default_provider: gemini`，或复制模板中的 `gemini` 配置段来自定义。程序通过共享的 HTTP 传输直接调用 [Google 官方 Decisions REST API](https://aistudio.google.com/docs/decisions-api)，无需额外 SDK；棋盘作为 JSON 文本传入 `input`，候选格作为 `choice` 问题的选项，密钥仅在 `x-goog-api-key` 请求头中发送。使用该接口需要密钥所属项目有相应的模型访问权限和配额。
+
+页面下拉框会显示已配置密钥的 Gemini Decisions，可在下一次 Replay 切换使用；请求、返回、概率、模型名与耗时沿用现有日志。Google 的 `confidence` 表示选项获胜的置信度，不等于该格无雷的概率；`JEV_MIN_CONFIDENCE` 按该返回值检查。每个 `choice` 问题支持 2–255 个候选格，默认候选上限仍为 12；只剩一个候选时本地直接点击。
 
 ### Jev 模型版本
 

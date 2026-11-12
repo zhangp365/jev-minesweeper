@@ -22,6 +22,7 @@ gemini:                      # Google Gemini Decisions API（不是 OpenAI 兼�
   model: gemini-decision-1
   api_key: null              # 留空读取 GEMINI_API_KEY，回退到 GOOGLE_API_KEY
   api_key_env: GEMINI_API_KEY # 可指定其他环境变量；yaml api_key 的优先级最高
+  include_screenshot: false # 默认关闭；true 随文本附上当前棋盘截图，页面复选框可随时切换
 
 request:
   attempts: 3                # 网络失败重试次数（环境变量 JEV_REQUEST_ATTEMPTS 优先）

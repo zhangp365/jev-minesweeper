@@ -23,7 +23,8 @@ const DEFAULTS = {
     endpoint: "https://generativelanguage.googleapis.com/v1beta/decisions",
     model: "gemini-decision-1",
     api_key: null,
-    api_key_env: "GEMINI_API_KEY"
+    api_key_env: "GEMINI_API_KEY",
+    include_screenshot: false
   },
   request: {
     attempts: 3,
@@ -70,7 +71,8 @@ export function loadLlmConfig(configPath) {
       endpoint: String(merged.gemini.endpoint),
       model: String(merged.gemini.model),
       apiKey: merged.gemini.api_key || null,
-      apiKeyEnv: String(merged.gemini.api_key_env || "GEMINI_API_KEY")
+      apiKeyEnv: String(merged.gemini.api_key_env || "GEMINI_API_KEY"),
+      includeScreenshot: merged.gemini.include_screenshot === true
     },
     request: { attempts, proxyUrl }
   };

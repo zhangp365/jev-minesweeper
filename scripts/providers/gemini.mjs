@@ -10,7 +10,7 @@ export function resolveGeminiApiKey(configured, apiKeyEnv = "GEMINI_API_KEY", en
 export function createGeminiProvider({ endpoint, model, apiKey, postJson }) {
   return {
     name: "gemini",
-    async choose({ board, candidates, knownMines, level, step }) {
+    async choose({ board, candidates, knownMines, level, step, screenshot = null }) {
       const candidateKeys = new Set(candidates.map((cell) => `${cell.x},${cell.y}`));
       // The runner handles a single candidate locally. Google accepts 2–255
       // distinct options per choice question; never silently drop candidates.
@@ -30,7 +30,10 @@ export function createGeminiProvider({ endpoint, model, apiKey, postJson }) {
       const requestPayload = {
         model,
         // Structured state must be serialized as text in the Decisions API.
-        input: JSON.stringify(state),
+        input: screenshot ? [
+          { type: "text", text: JSON.stringify(state) },
+          { type: "image", data: screenshot.data, mime_type: "image/png", resolution: "high" }
+        ] : JSON.stringify(state),
         questions: {
           reveal: {
             type: "choice",
@@ -60,11 +63,23 @@ export function createGeminiProvider({ endpoint, model, apiKey, postJson }) {
         throw new Error("Gemini Decisions returned an invalid confidence (expected a number between 0 and 1)");
       }
       const [x, y] = answer.choice.split(",").map(Number);
+      // Keep large Base64 data out of the page/JSON logs and Windows command
+      // arguments. The original PNG remains on disk for review.
+      const loggedRequest = screenshot ? {
+        ...requestPayload,
+        input: requestPayload.input.map((block) => block.type === "image"
+          ? { ...block, data: `[base64 omitted; ${screenshot.bytes} bytes; see screenshot file]` }
+          : block)
+      } : requestPayload;
       return {
         x, y, answer,
         usage: response.body.usage ?? null,
         model: response.body.model ?? model,
-        request: requestPayload,
+        request: loggedRequest,
+        ...(screenshot ? { screenshot: {
+          path: screenshot.path, bytes: screenshot.bytes, mimeType: "image/png",
+          ...(screenshot.width && screenshot.height ? { width: screenshot.width, height: screenshot.height } : {})
+        } } : {}),
         response: response.body,
         requestMs
       };

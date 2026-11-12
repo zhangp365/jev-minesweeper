@@ -32,6 +32,12 @@
       });
       select.value = activeId;
       select.hidden = false;
+      var screenshot = document.getElementById("gemini_include_screenshot");
+      if (screenshot) screenshot.disabled = !options.some(function (option) { return option.id === "gemini"; });
+    },
+    setScreenshotEnabled: function (enabled) {
+      var screenshot = document.getElementById("gemini_include_screenshot");
+      if (screenshot) screenshot.checked = Boolean(enabled);
     },
     getSelectedProvider: function () {
       var select = document.getElementById("jev_provider_select");
@@ -55,9 +61,20 @@
       section.appendChild(title);
       appendJson(section, "Step timings", entry.timings);
       appendJson(section, "Request (sanitized)", entry.request);
+      if (entry.screenshot && entry.screenshot.path) {
+        var preview = document.createElement("img");
+        preview.className = "jev_screenshot";
+        preview.src = entry.screenshot.path;
+        preview.alt = "Board screenshot sent to Gemini for this decision";
+        if (entry.screenshot.width && entry.screenshot.height) {
+          preview.width = entry.screenshot.width;
+          preview.height = entry.screenshot.height;
+        }
+        section.appendChild(preview);
+      }
       appendJson(section, "Response", entry.response);
       log.appendChild(section);
-      section.scrollIntoView({ block: "end", behavior: "smooth" });
+      log.scrollTop = log.scrollHeight;
     }
   };
 

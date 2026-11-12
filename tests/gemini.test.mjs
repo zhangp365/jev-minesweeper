@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { mkdtempSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, unlinkSync, rmdirSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -81,6 +81,29 @@ test("Gemini REST transport sends visible state and maps a typed answer to a leg
   assert.deepEqual(move.request, received.body);
   assert.ok(Number.isFinite(move.requestMs) && move.requestMs >= 0);
   assert.ok(!JSON.stringify(move).includes("test-secret"));
+
+  await t.test("screenshot mode sends a PNG alongside text and keeps Base64 out of logs", async () => {
+    const png = readFileSync(new URL("../image/sprite.png", import.meta.url));
+    const screenshot = {
+      data: png.toString("base64"), bytes: png.length, path: "result/board-test.png",
+      width: png.readUInt32BE(16), height: png.readUInt32BE(20)
+    };
+    const imageMove = await provider.choose({ ...context, screenshot });
+    assert.equal(received.body.input.length, 2);
+    assert.equal(received.body.input[0].type, "text");
+    assert.deepEqual(JSON.parse(received.body.input[0].text), state);
+    assert.deepEqual(received.body.input[1], {
+      type: "image", data: screenshot.data, mime_type: "image/png", resolution: "high"
+    });
+    assert.deepEqual(Buffer.from(received.body.input[1].data, "base64"), png);
+    assert.deepEqual(imageMove.screenshot, {
+      path: screenshot.path, bytes: png.length, mimeType: "image/png", width: screenshot.width, height: screenshot.height
+    });
+    assert.match(imageMove.request.input[1].data, /base64 omitted/);
+    assert.equal(imageMove.request.input[1].mime_type, "image/png");
+    assert.ok(!JSON.stringify(imageMove).includes(screenshot.data));
+    assert.ok(!JSON.stringify(imageMove).includes("test-secret"));
+  });
 });
 
 test("invalid answers stop the game before a click can be requested", async (t) => {
@@ -140,14 +163,15 @@ test("existing YAML files get Gemini defaults and explicit Gemini overrides surv
   assert.equal(legacy.jev.model, "jev-preview");
   assert.deepEqual(legacy.gemini, {
     endpoint: "https://generativelanguage.googleapis.com/v1beta/decisions",
-    model: "gemini-decision-1", apiKey: null, apiKeyEnv: "GEMINI_API_KEY"
+    model: "gemini-decision-1", apiKey: null, apiKeyEnv: "GEMINI_API_KEY", includeScreenshot: false
   });
-  writeFileSync(path, "default_provider: gemini\ngemini:\n  endpoint: http://localhost:8090/decisions\n  api_key: yaml-key\n  api_key_env: CUSTOM_KEY\n");
+  writeFileSync(path, "default_provider: gemini\ngemini:\n  endpoint: http://localhost:8090/decisions\n  api_key: yaml-key\n  api_key_env: CUSTOM_KEY\n  include_screenshot: true\n");
   const configured = loadLlmConfig(path);
   assert.equal(configured.defaultProvider, "gemini");
   assert.equal(configured.gemini.endpoint, "http://localhost:8090/decisions");
   assert.equal(configured.gemini.model, "gemini-decision-1");
   assert.equal(configured.gemini.apiKey, "yaml-key");
   assert.equal(configured.gemini.apiKeyEnv, "CUSTOM_KEY");
+  assert.equal(configured.gemini.includeScreenshot, true);
   assert.ok(PROVIDER_NAMES.includes("gemini"));
 });

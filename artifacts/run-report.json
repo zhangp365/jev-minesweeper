@@ -1,33 +1,930 @@
 {
-  "mode": "verify",
-  "provider": null,
-  "startedAt": "2026-09-23T04:50:06.899Z",
-  "resultFile": "result/jev-2026-09-23T04-50-06-899Z.json",
+  "mode": "gemini",
+  "provider": "gemini",
+  "startedAt": "2026-11-12T10:33:45.862Z",
+  "resultFile": "result/jev-2026-11-12T10-33-45-862Z.json",
   "levels": [
     {
       "level": "Beginner",
-      "mode": "verify",
-      "moves": 1,
-      "elapsedMs": 2588,
+      "mode": "gemini",
+      "provider": "gemini",
+      "moves": [
+        {
+          "step": 1,
+          "source": "opening",
+          "x": 4,
+          "y": 4,
+          "timings": {
+            "boardReadMs": 0,
+            "modelRequestMs": 0,
+            "playwrightClickMs": 654,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 654
+          }
+        },
+        {
+          "step": 2,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 0,
+          "y": 0,
+          "confidence": 0.10484413273133919,
+          "usage": {
+            "total_tokens": 1554,
+            "total_input_tokens": 1554,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 465
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 2,
+            "screenshotMs": 1342,
+            "modelRequestMs": 1228,
+            "playwrightClickMs": 1133,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3706
+          }
+        },
+        {
+          "step": 3,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 3,
+          "y": 4,
+          "confidence": 0.30753692391149656,
+          "usage": {
+            "total_tokens": 1684,
+            "total_input_tokens": 1684,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 595
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 633,
+            "screenshotMs": 1299,
+            "modelRequestMs": 657,
+            "playwrightClickMs": 1128,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3717
+          }
+        },
+        {
+          "step": 4,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 4,
+          "y": 3,
+          "confidence": 0.564083367429178,
+          "usage": {
+            "total_tokens": 1680,
+            "total_input_tokens": 1680,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 591
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1317,
+            "modelRequestMs": 750,
+            "playwrightClickMs": 1116,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3184
+          }
+        },
+        {
+          "step": 5,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 5,
+          "y": 4,
+          "confidence": 0.1467758398852825,
+          "usage": {
+            "total_tokens": 1665,
+            "total_input_tokens": 1665,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 576
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1310,
+            "modelRequestMs": 970,
+            "playwrightClickMs": 1130,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3411
+          }
+        },
+        {
+          "step": 6,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 5,
+          "y": 3,
+          "confidence": 0.12423445018402392,
+          "usage": {
+            "total_tokens": 1660,
+            "total_input_tokens": 1660,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 571
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1286,
+            "modelRequestMs": 984,
+            "playwrightClickMs": 1135,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3406
+          }
+        },
+        {
+          "step": 7,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 6,
+          "y": 0,
+          "confidence": 0.16492714887121193,
+          "usage": {
+            "total_tokens": 1669,
+            "total_input_tokens": 1669,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 580
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 607,
+            "screenshotMs": 1280,
+            "modelRequestMs": 638,
+            "playwrightClickMs": 1114,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3639
+          }
+        },
+        {
+          "step": 8,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 7,
+          "y": 0,
+          "confidence": 0.15462371998066748,
+          "usage": {
+            "total_tokens": 1666,
+            "total_input_tokens": 1666,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 577
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1280,
+            "modelRequestMs": 684,
+            "playwrightClickMs": 1113,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3077
+          }
+        },
+        {
+          "step": 9,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 3,
+          "y": 5,
+          "confidence": 0.13049063395964608,
+          "usage": {
+            "total_tokens": 1663,
+            "total_input_tokens": 1663,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 574
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1290,
+            "modelRequestMs": 741,
+            "playwrightClickMs": 1128,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3159
+          }
+        },
+        {
+          "step": 10,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 5,
+          "y": 5,
+          "confidence": 0.15415887151111551,
+          "usage": {
+            "total_tokens": 1678,
+            "total_input_tokens": 1678,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 589
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 612,
+            "screenshotMs": 1272,
+            "modelRequestMs": 630,
+            "playwrightClickMs": 1124,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3639
+          }
+        },
+        {
+          "step": 11,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 7,
+          "y": 2,
+          "confidence": 0.1205351473439905,
+          "usage": {
+            "total_tokens": 1675,
+            "total_input_tokens": 1675,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 586
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1270,
+            "modelRequestMs": 806,
+            "playwrightClickMs": 1139,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3216
+          }
+        },
+        {
+          "step": 12,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 7,
+          "y": 1,
+          "confidence": 0.2428518234579386,
+          "usage": {
+            "total_tokens": 1684,
+            "total_input_tokens": 1684,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 595
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1276,
+            "modelRequestMs": 814,
+            "playwrightClickMs": 1115,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3205
+          }
+        },
+        {
+          "step": 13,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 7,
+          "y": 3,
+          "confidence": 0.16252909374708005,
+          "usage": {
+            "total_tokens": 1681,
+            "total_input_tokens": 1681,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 592
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1286,
+            "modelRequestMs": 748,
+            "playwrightClickMs": 1128,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3162
+          }
+        },
+        {
+          "step": 14,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 6,
+          "y": 5,
+          "confidence": 0.2180901379649937,
+          "usage": {
+            "total_tokens": 1697,
+            "total_input_tokens": 1697,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 608
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 610,
+            "screenshotMs": 1275,
+            "modelRequestMs": 771,
+            "playwrightClickMs": 1135,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3791
+          }
+        },
+        {
+          "step": 15,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 7,
+          "y": 5,
+          "confidence": 0.1532468594374064,
+          "usage": {
+            "total_tokens": 1700,
+            "total_input_tokens": 1700,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 611
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1272,
+            "modelRequestMs": 1492,
+            "playwrightClickMs": 1117,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3881
+          }
+        },
+        {
+          "step": 16,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 4,
+          "y": 6,
+          "confidence": 0.19309360209746843,
+          "usage": {
+            "total_tokens": 1699,
+            "total_input_tokens": 1699,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 610
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1288,
+            "modelRequestMs": 805,
+            "playwrightClickMs": 1124,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3218
+          }
+        },
+        {
+          "step": 17,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 8,
+          "y": 1,
+          "confidence": 0.14234927588526733,
+          "usage": {
+            "total_tokens": 1689,
+            "total_input_tokens": 1689,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 600
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1269,
+            "modelRequestMs": 692,
+            "playwrightClickMs": 1139,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3100
+          }
+        },
+        {
+          "step": 18,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 8,
+          "y": 4,
+          "confidence": 0.49058938076076547,
+          "usage": {
+            "total_tokens": 1683,
+            "total_input_tokens": 1683,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 594
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1275,
+            "modelRequestMs": 882,
+            "playwrightClickMs": 1188,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3345
+          }
+        },
+        {
+          "step": 19,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 8,
+          "y": 5,
+          "confidence": 0.34569180631023116,
+          "usage": {
+            "total_tokens": 1673,
+            "total_input_tokens": 1673,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 584
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1288,
+            "modelRequestMs": 663,
+            "playwrightClickMs": 1125,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3076
+          }
+        },
+        {
+          "step": 20,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 3,
+          "y": 6,
+          "confidence": 0.19272607663531072,
+          "usage": {
+            "total_tokens": 1681,
+            "total_input_tokens": 1681,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 592
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1279,
+            "modelRequestMs": 786,
+            "playwrightClickMs": 1122,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3187
+          }
+        },
+        {
+          "step": 21,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 5,
+          "y": 6,
+          "confidence": 0.21077760529153555,
+          "usage": {
+            "total_tokens": 1684,
+            "total_input_tokens": 1684,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 595
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1307,
+            "modelRequestMs": 649,
+            "playwrightClickMs": 1152,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3108
+          }
+        },
+        {
+          "step": 22,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 6,
+          "y": 7,
+          "confidence": 0.12502930964341624,
+          "usage": {
+            "total_tokens": 1694,
+            "total_input_tokens": 1694,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 605
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 613,
+            "screenshotMs": 1272,
+            "modelRequestMs": 590,
+            "playwrightClickMs": 1135,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3610
+          }
+        },
+        {
+          "step": 23,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 7,
+          "y": 6,
+          "confidence": 0.13711923182673555,
+          "usage": {
+            "total_tokens": 1708,
+            "total_input_tokens": 1708,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 619
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1310,
+            "modelRequestMs": 824,
+            "playwrightClickMs": 1148,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3282
+          }
+        },
+        {
+          "step": 24,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 8,
+          "y": 6,
+          "confidence": 0.14994226028841712,
+          "usage": {
+            "total_tokens": 1699,
+            "total_input_tokens": 1699,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 610
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1273,
+            "modelRequestMs": 659,
+            "playwrightClickMs": 1128,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3060
+          }
+        },
+        {
+          "step": 25,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 5,
+          "y": 7,
+          "confidence": 0.13006179814279611,
+          "usage": {
+            "total_tokens": 1682,
+            "total_input_tokens": 1682,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 593
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1271,
+            "modelRequestMs": 628,
+            "playwrightClickMs": 1139,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3038
+          }
+        },
+        {
+          "step": 26,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 4,
+          "y": 7,
+          "confidence": 0.2582597448389564,
+          "usage": {
+            "total_tokens": 1665,
+            "total_input_tokens": 1665,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 576
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "autoFlagged": 1,
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 615,
+            "screenshotMs": 1285,
+            "modelRequestMs": 735,
+            "playwrightClickMs": 1134,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3768
+          }
+        },
+        {
+          "step": 27,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 4,
+          "y": 8,
+          "confidence": 0.2617415560624843,
+          "usage": {
+            "total_tokens": 1656,
+            "total_input_tokens": 1656,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 567
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1271,
+            "modelRequestMs": 1023,
+            "playwrightClickMs": 1138,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3432
+          }
+        },
+        {
+          "step": 28,
+          "source": "gemini",
+          "provider": "gemini",
+          "x": 3,
+          "y": 8,
+          "confidence": 0.2151706511353168,
+          "usage": {
+            "total_tokens": 1638,
+            "total_input_tokens": 1638,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 549
+              },
+              {
+                "modality": "image",
+                "tokens": 1089
+              }
+            ],
+            "total_output_tokens": 0
+          },
+          "model": "gemini-decision-1",
+          "timings": {
+            "boardReadMs": 0,
+            "autoFlagMs": 0,
+            "screenshotMs": 1292,
+            "modelRequestMs": 1018,
+            "playwrightClickMs": 1117,
+            "stateReadAndPanelMs": 0,
+            "turnTotalMs": 3427
+          }
+        }
+      ],
+      "elapsedMs": 92138,
       "cleared": false,
-      "exploded": false
-    },
-    {
-      "level": "Intermediate",
-      "mode": "verify",
-      "moves": 1,
-      "elapsedMs": 2599,
-      "cleared": false,
-      "exploded": false
-    },
-    {
-      "level": "Expert",
-      "mode": "verify",
-      "moves": 1,
-      "elapsedMs": 2650,
-      "cleared": false,
-      "exploded": false
+      "exploded": true,
+      "stepLimitReached": false
     }
   ],
-  "finishedAt": "2026-09-23T04:50:17.315Z"
+  "finishedAt": "2026-11-12T10:35:45.722Z"
 }

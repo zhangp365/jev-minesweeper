@@ -8,13 +8,14 @@
  * --provider jev      let Jev select every reveal (default).
  * --provider openai   let any OpenAI-compatible chat model select every reveal.
  * --provider gemini   let Gemini Decisions select every reveal.
+ * --gemini-screenshot include a current board screenshot with Gemini requests.
  *
  * Provider endpoints/models/keys live in config/providers.yaml (see
  * config/providers.example.yaml). All providers share the same decision
  * instructions, board state, candidate ranking, and move shape; only their
  * API request/output wrappers differ.
  */
-import { existsSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { execFileSync, spawn } from "node:child_process";
@@ -22,6 +23,7 @@ import { fileURLToPath } from "node:url";
 import { loadLlmConfig, PROVIDER_NAMES } from "./config.mjs";
 import { createJsonPoster } from "./http.mjs";
 import { rankedCandidates } from "./board-analysis.mjs";
+import { screenshotBoard } from "./board-screenshot.mjs";
 import { createJevProvider, resolveJevApiKey } from "./providers/jev.mjs";
 import { createOpenAIProvider } from "./providers/openai.mjs";
 import { createGeminiProvider, resolveGeminiApiKey } from "./providers/gemini.mjs";
@@ -75,10 +77,13 @@ const transcript = { mode: isVerify ? "verify" : null, provider: null, startedAt
 let provider = null;
 let providerModel = null;
 let providerModels = null;
+let geminiScreenshotDefault = false;
+let screenshotIndex = 0;
 const providers = {};
 const providerOptions = [];
 if (!isVerify) {
   const config = loadLlmConfig(configPath);
+  geminiScreenshotDefault = process.argv.includes("--gemini-screenshot") || config.gemini.includeScreenshot;
   const providerName = (providerArgument || config.defaultProvider || "jev").toLowerCase();
   if (!PROVIDER_NAMES.includes(providerName)) {
     throw new Error(`Unknown provider: ${providerName} (choose from ${PROVIDER_NAMES.join(", ")})`);
@@ -222,10 +227,29 @@ async function saveTranscript() {
 }
 
 function readJson(expression) {
-  const output = cli("eval", `() => JSON.stringify(${expression})`);
+  return parseCliJson(cli("eval", `() => JSON.stringify(${expression})`));
+}
+
+function parseCliJson(output) {
   const match = output.match(/### Result\r?\n([\s\S]*?)\r?\n### /);
   if (!match) throw new Error(`Could not parse playwright-cli eval output: ${output}`);
   return JSON.parse(JSON.parse(match[1].trim()));
+}
+
+function captureBoardScreenshot() {
+  // Check the live control before every Gemini request, so toggling it during
+  // a game applies to the next decision. Capture after auto-flagging, before
+  // the selected reveal, using only the complete rendered cell grid.
+  if (!readJson("document.getElementById('gemini_include_screenshot').checked")) return null;
+  const filename = `board-${runStartedAt.toISOString().replace(/[:.]/g, "-")}-${++screenshotIndex}.png`;
+  const path = join(resultDir, filename);
+  const image = parseCliJson(cli("run-code", `async (page) => JSON.stringify(await (${screenshotBoard.toString()})(page))`));
+  const png = Buffer.from(image.data, "base64");
+  if (png.readUInt32BE(16) !== image.width || png.readUInt32BE(20) !== image.height) {
+    throw new Error("Screenshot dimensions do not match the complete Minesweeper grid");
+  }
+  writeFileSync(path, png);
+  return { data: image.data, width: image.width, height: image.height, bytes: png.length, path: `result/${filename}` };
 }
 
 // A separate Playwright CLI process costs more than the DOM operation itself.
@@ -332,9 +356,13 @@ function forcedCandidateMove(candidate) {
 async function chooseMove(board, level, step) {
   const { cells: candidates, knownMines } = rankedCandidates(board, candidateLimit);
   if (!candidates.length) throw new Error("No covered cells remain");
+  const screenshotStarted = performance.now();
+  const screenshot = provider.name === "gemini" && candidates.length > 1 ? captureBoardScreenshot() : null;
+  const screenshotMs = screenshot ? Math.round(performance.now() - screenshotStarted) : 0;
   const move = candidates.length === 1
     ? forcedCandidateMove(candidates[0])
-    : await provider.choose({ board, candidates, knownMines, level, step });
+    : await provider.choose({ board, candidates, knownMines, level, step, screenshot });
+  move.screenshotMs = screenshotMs;
   if (!candidates.some((cell) => cell.x === move.x && cell.y === move.y)) {
     throw new Error(`${provider.name} returned a cell outside the candidate list (${move.x},${move.y})`);
   }
@@ -452,7 +480,7 @@ async function playLevel(level, { alreadyStarted = false } = {}) {
     currentBoard = board;
     const autoFlagMs = Math.round(performance.now() - autoFlagStarted);
     const move = await chooseMove(board, level, step);
-    const timings = { boardReadMs, autoFlagMs, modelRequestMs: move.requestMs, playwrightClickMs: 0 };
+    const timings = { boardReadMs, autoFlagMs, screenshotMs: move.screenshotMs, modelRequestMs: move.requestMs, playwrightClickMs: 0 };
     const panelReadStarted = performance.now();
     const chooserLabel = move.source === "single-candidate" ? "local forced choice" : `${provider.name} (${move.model})`;
     const afterClick = clickAndRenderPanel(move.x, move.y, {
@@ -461,6 +489,7 @@ async function playLevel(level, { alreadyStarted = false } = {}) {
       model: move.source === "single-candidate" ? providerModel : (move.model || providerModel),
       request: move.request,
       response: move.response,
+      screenshot: move.screenshot,
       timings
     });
     timings.playwrightClickMs = Math.round(performance.now() - panelReadStarted);
@@ -479,6 +508,7 @@ async function playLevel(level, { alreadyStarted = false } = {}) {
       provider: move.source === "single-candidate" ? "local" : provider.name,
       request: move.request,
       response: move.response,
+      screenshot: move.screenshot,
       autoFlagged: autoFlagged.length ? autoFlagged : undefined,
       timings
     });
@@ -500,7 +530,7 @@ async function waitForReviewOrClose() {
     try {
       // A page reload wipes the dropdown; re-push the options whenever the
       // select is missing so the controls survive refreshes.
-      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); var s2 = document.getElementById('jev_provider_select'); var level = typeof window.getSelectedLevel === 'function' ? window.getSelectedLevel() : window.__jevSelectedLevel; return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null, level: level || null }; })()`);
+      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) { window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); window.jevPanel.setScreenshotEnabled(${geminiScreenshotDefault}); } var s2 = document.getElementById('jev_provider_select'); var level = typeof window.getSelectedLevel === 'function' ? window.getSelectedLevel() : window.__jevSelectedLevel; return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null, level: level || null }; })()`);
       if (state.rerun) {
         cli("eval", "() => (window.__jevRerun = false, true)");
         return { rerun: true, providerName: state.provider, levelId: state.level };
@@ -557,7 +587,7 @@ try {
     // for the body elements before pushing the provider options.
     for (let attempt = 0; attempt < 30; attempt++) {
       try {
-        const pushed = readJson(`(() => { if (!window.jevPanel || !window.jevPanel.setProviders) return false; if (!document.getElementById('jev_provider_select') || !document.getElementById('button_beginner')) return false; window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); return true; })()`);
+        const pushed = readJson(`(() => { if (!window.jevPanel || !window.jevPanel.setProviders) return false; if (!document.getElementById('jev_provider_select') || !document.getElementById('button_beginner')) return false; window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); window.jevPanel.setScreenshotEnabled(${geminiScreenshotDefault}); return true; })()`);
         if (pushed) break;
       } catch { /* page not ready yet */ }
       await delay(500);

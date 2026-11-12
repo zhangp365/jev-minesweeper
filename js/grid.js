@@ -209,7 +209,7 @@ arcade.minesweeper.grid.prototype.convert_tile_array_to_grid = function() {
 }
 
 arcade.minesweeper.grid.prototype.print_tiles = function() {
-	var t = $.createElement("table").setAttribute({"cellspacing": 0, "cellpadding": 0});
+	var t = $.createElement("table").setAttribute({"id": "minesweeper_grid", "cellspacing": 0, "cellpadding": 0});
 	var tb = $.createElement("tbody");
 	for (var y = 0; y < this.height; y++) {
 		var tr = $.createElement("tr");

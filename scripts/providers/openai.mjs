@@ -3,6 +3,7 @@
 // defensively because models routinely wrap JSON in prose or code fences.
 import { neighborSummary } from "../board-analysis.mjs";
 import { DECISION_INSTRUCTIONS } from "../prompt.mjs";
+import { omittedImageData, screenshotLog } from "./screenshot.mjs";
 
 // Best-effort JSON extraction: plain JSON > fenced block > first {...} span >
 // repaired span (trailing commas, curly quotes). Throws when nothing parses.
@@ -82,13 +83,17 @@ const JSON_FORMAT_HINT = '{"choice": "x,y", "confidence": 0.0到1的小数, "rea
 export function createOpenAIProvider({ baseUrl, model, apiKey, temperature = 0, jsonMode = true, postJson, log = console.log }) {
   return {
     name: "openai",
-    async choose({ board, candidates, knownMines, level, step }) {
+    async choose({ board, candidates, knownMines, level, step, screenshot = null }) {
       const candidateKeys = new Set(candidates.map((cell) => `${cell.x},${cell.y}`));
+      const prompt = buildPrompt({ board, candidates, knownMines, level, step });
       const messages = [
         { role: "system", content: "你是一名扫雷专家。无论发生什么，你只输出一个 JSON 对象。" },
-        { role: "user", content: buildPrompt({ board, candidates, knownMines, level, step }) }
+        { role: "user", content: screenshot ? [
+          { type: "text", text: prompt },
+          { type: "image_url", image_url: { url: `data:image/png;base64,${screenshot.data}`, detail: "high" } }
+        ] : prompt }
       ];
-      const requestPayload = {
+      let requestPayload = {
         model,
         temperature,
         messages,
@@ -113,9 +118,10 @@ export function createOpenAIProvider({ baseUrl, model, apiKey, temperature = 0, 
           { role: "assistant", content: String(content).slice(0, 500) },
           { role: "user", content: `上面的回复无法解析为合法选择。请严格只输出一个 JSON 对象，格式：${JSON_FORMAT_HINT}。choice 必须取自候选列表。` }
         ];
+        requestPayload = { ...requestPayload, messages: retryMessages };
         response = await postJson(`${baseUrl}/chat/completions`, {
           headers: { authorization: `Bearer ${apiKey}` },
-          body: { ...requestPayload, messages: retryMessages }
+          body: requestPayload
         });
         if (!response.ok) throw new Error(`OpenAI 兼容接口 HTTP ${response.status}：${JSON.stringify(response.body)?.slice(0, 400)}`);
         content = response.body?.choices?.[0]?.message?.content ?? "";
@@ -125,13 +131,22 @@ export function createOpenAIProvider({ baseUrl, model, apiKey, temperature = 0, 
       if (!answer) throw new Error(`无法从模型回复解析出合法候选：${String(content).slice(0, 300)}`);
 
       const [x, y] = answer.key.split(",").map(Number);
+      const loggedRequest = screenshot ? {
+        ...requestPayload,
+        messages: requestPayload.messages.map((message) => Array.isArray(message.content) ? {
+          ...message,
+          content: message.content.map((block) => block.type === "image_url"
+            ? { ...block, image_url: { ...block.image_url, url: omittedImageData(screenshot) } } : block)
+        } : message)
+      } : requestPayload;
       return {
         x,
         y,
         answer: { choice: answer.key, confidence: answer.confidence, reason: answer.reason },
         usage: response.body?.usage ?? null,
         model: response.body?.model ?? model,
-        request: requestPayload,
+        request: loggedRequest,
+        ...screenshotLog(screenshot),
         response: response.body,
         requestMs
       };

@@ -2,6 +2,7 @@
 // https://aistudio.google.com/docs/decisions-api
 import { neighborSummary } from "../board-analysis.mjs";
 import { DECISION_INSTRUCTIONS } from "../prompt.mjs";
+import { omittedImageData, screenshotLog } from "./screenshot.mjs";
 
 export function resolveGeminiApiKey(configured, apiKeyEnv = "GEMINI_API_KEY", env = process.env) {
   return configured || env[apiKeyEnv] || env.GOOGLE_API_KEY || null;
@@ -68,7 +69,7 @@ export function createGeminiProvider({ endpoint, model, apiKey, postJson }) {
       const loggedRequest = screenshot ? {
         ...requestPayload,
         input: requestPayload.input.map((block) => block.type === "image"
-          ? { ...block, data: `[base64 omitted; ${screenshot.bytes} bytes; see screenshot file]` }
+          ? { ...block, data: omittedImageData(screenshot) }
           : block)
       } : requestPayload;
       return {
@@ -76,10 +77,7 @@ export function createGeminiProvider({ endpoint, model, apiKey, postJson }) {
         usage: response.body.usage ?? null,
         model: response.body.model ?? model,
         request: loggedRequest,
-        ...(screenshot ? { screenshot: {
-          path: screenshot.path, bytes: screenshot.bytes, mimeType: "image/png",
-          ...(screenshot.width && screenshot.height ? { width: screenshot.width, height: screenshot.height } : {})
-        } } : {}),
+        ...screenshotLog(screenshot),
         response: response.body,
         requestMs
       };

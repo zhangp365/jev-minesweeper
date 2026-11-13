@@ -8,7 +8,7 @@
  * --provider jev      let Jev select every reveal (default).
  * --provider openai   let any OpenAI-compatible chat model select every reveal.
  * --provider gemini   let Gemini Decisions select every reveal.
- * --gemini-screenshot include a current board screenshot with Gemini requests.
+ * --screenshot       include a current board screenshot with model requests.
  *
  * Provider endpoints/models/keys live in config/providers.yaml (see
  * config/providers.example.yaml). All providers share the same decision
@@ -77,13 +77,13 @@ const transcript = { mode: isVerify ? "verify" : null, provider: null, startedAt
 let provider = null;
 let providerModel = null;
 let providerModels = null;
-let geminiScreenshotDefault = false;
+let screenshotDefault = false;
 let screenshotIndex = 0;
 const providers = {};
 const providerOptions = [];
 if (!isVerify) {
   const config = loadLlmConfig(configPath);
-  geminiScreenshotDefault = process.argv.includes("--gemini-screenshot") || config.gemini.includeScreenshot;
+  screenshotDefault = process.argv.includes("--screenshot") || config.includeScreenshot;
   const providerName = (providerArgument || config.defaultProvider || "jev").toLowerCase();
   if (!PROVIDER_NAMES.includes(providerName)) {
     throw new Error(`Unknown provider: ${providerName} (choose from ${PROVIDER_NAMES.join(", ")})`);
@@ -237,13 +237,14 @@ function parseCliJson(output) {
 }
 
 function captureBoardScreenshot() {
-  // Check the live control before every Gemini request, so toggling it during
+  // Check the live control before every model request, so toggling it during
   // a game applies to the next decision. Capture after auto-flagging, before
   // the selected reveal, using only the complete rendered cell grid.
-  if (!readJson("document.getElementById('gemini_include_screenshot').checked")) return null;
+  if (!readJson("document.getElementById('include_screenshot').checked")) return null;
   const filename = `board-${runStartedAt.toISOString().replace(/[:.]/g, "-")}-${++screenshotIndex}.png`;
   const path = join(resultDir, filename);
-  const image = parseCliJson(cli("run-code", `async (page) => JSON.stringify(await (${screenshotBoard.toString()})(page))`));
+  const options = { minDimension: provider.screenshotMinDimension || 0 };
+  const image = parseCliJson(cli("run-code", `async (page) => JSON.stringify(await (${screenshotBoard.toString()})(page, ${JSON.stringify(options)}))`));
   const png = Buffer.from(image.data, "base64");
   if (png.readUInt32BE(16) !== image.width || png.readUInt32BE(20) !== image.height) {
     throw new Error("Screenshot dimensions do not match the complete Minesweeper grid");
@@ -357,7 +358,7 @@ async function chooseMove(board, level, step) {
   const { cells: candidates, knownMines } = rankedCandidates(board, candidateLimit);
   if (!candidates.length) throw new Error("No covered cells remain");
   const screenshotStarted = performance.now();
-  const screenshot = provider.name === "gemini" && candidates.length > 1 ? captureBoardScreenshot() : null;
+  const screenshot = candidates.length > 1 ? captureBoardScreenshot() : null;
   const screenshotMs = screenshot ? Math.round(performance.now() - screenshotStarted) : 0;
   const move = candidates.length === 1
     ? forcedCandidateMove(candidates[0])
@@ -530,7 +531,7 @@ async function waitForReviewOrClose() {
     try {
       // A page reload wipes the dropdown; re-push the options whenever the
       // select is missing so the controls survive refreshes.
-      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) { window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); window.jevPanel.setScreenshotEnabled(${geminiScreenshotDefault}); } var s2 = document.getElementById('jev_provider_select'); var level = typeof window.getSelectedLevel === 'function' ? window.getSelectedLevel() : window.__jevSelectedLevel; return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null, level: level || null }; })()`);
+      const state = readJson(`(() => { var s = document.getElementById('jev_provider_select'); if ((!s || s.hidden) && window.jevPanel && window.jevPanel.setProviders) { window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); window.jevPanel.setScreenshotEnabled(${screenshotDefault}); } var s2 = document.getElementById('jev_provider_select'); var level = typeof window.getSelectedLevel === 'function' ? window.getSelectedLevel() : window.__jevSelectedLevel; return { rerun: window.__jevRerun === true, provider: s2 && !s2.hidden ? s2.value : null, level: level || null }; })()`);
       if (state.rerun) {
         cli("eval", "() => (window.__jevRerun = false, true)");
         return { rerun: true, providerName: state.provider, levelId: state.level };
@@ -587,7 +588,7 @@ try {
     // for the body elements before pushing the provider options.
     for (let attempt = 0; attempt < 30; attempt++) {
       try {
-        const pushed = readJson(`(() => { if (!window.jevPanel || !window.jevPanel.setProviders) return false; if (!document.getElementById('jev_provider_select') || !document.getElementById('button_beginner')) return false; window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); window.jevPanel.setScreenshotEnabled(${geminiScreenshotDefault}); return true; })()`);
+        const pushed = readJson(`(() => { if (!window.jevPanel || !window.jevPanel.setProviders) return false; if (!document.getElementById('jev_provider_select') || !document.getElementById('button_beginner')) return false; window.jevPanel.setProviders(${JSON.stringify(providerOptions)}, ${JSON.stringify(transcript.mode)}); window.jevPanel.setScreenshotEnabled(${screenshotDefault}); return true; })()`);
         if (pushed) break;
       } catch { /* page not ready yet */ }
       await delay(500);

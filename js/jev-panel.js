@@ -17,7 +17,7 @@
 
   window.jevPanel = {
     // Called once by the runner with the providers it can drive, e.g.
-    // [{ id: "jev", label: "Jev (model jev-latest)" }, ...]. The select's
+    // [{ id: "jev", label: "Jev (model jev-1.14.0)" }, ...]. The select's
     // value is polled by the runner during the review window, so changing it
     // switches the provider used by the next replay.
     setProviders: function (options, activeId) {
@@ -32,11 +32,11 @@
       });
       select.value = activeId;
       select.hidden = false;
-      var screenshot = document.getElementById("gemini_include_screenshot");
-      if (screenshot) screenshot.disabled = !options.some(function (option) { return option.id === "gemini"; });
+      var screenshot = document.getElementById("include_screenshot");
+      if (screenshot) screenshot.disabled = false;
     },
     setScreenshotEnabled: function (enabled) {
-      var screenshot = document.getElementById("gemini_include_screenshot");
+      var screenshot = document.getElementById("include_screenshot");
       if (screenshot) screenshot.checked = Boolean(enabled);
     },
     getSelectedProvider: function () {
@@ -65,7 +65,7 @@
         var preview = document.createElement("img");
         preview.className = "jev_screenshot";
         preview.src = entry.screenshot.path;
-        preview.alt = "Board screenshot sent to Gemini for this decision";
+        preview.alt = "Board screenshot sent to " + providerLabel(entry.provider) + " for this decision";
         if (entry.screenshot.width && entry.screenshot.height) {
           preview.width = entry.screenshot.width;
           preview.height = entry.screenshot.height;

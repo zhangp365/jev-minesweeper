@@ -6,9 +6,10 @@ import { parse as parseYaml } from "yaml";
 
 const DEFAULTS = {
   default_provider: "jev",
+  include_screenshot: false,
   jev: {
     endpoint: "https://api.typesafe.ai/v1/systemone",
-    model: "jev-latest",
+    model: "jev-1.14.0",
     api_key: null
   },
   openai: {
@@ -23,8 +24,7 @@ const DEFAULTS = {
     endpoint: "https://generativelanguage.googleapis.com/v1beta/decisions",
     model: "gemini-decision-1",
     api_key: null,
-    api_key_env: "GEMINI_API_KEY",
-    include_screenshot: false
+    api_key_env: "GEMINI_API_KEY"
   },
   request: {
     attempts: 3,
@@ -54,6 +54,7 @@ export function loadLlmConfig(configPath) {
 
   return {
     defaultProvider: String(merged.default_provider || "jev").trim().toLowerCase(),
+    includeScreenshot: merged.include_screenshot === true,
     jev: {
       endpoint: String(merged.jev.endpoint),
       model: String(merged.jev.model),
@@ -71,8 +72,7 @@ export function loadLlmConfig(configPath) {
       endpoint: String(merged.gemini.endpoint),
       model: String(merged.gemini.model),
       apiKey: merged.gemini.api_key || null,
-      apiKeyEnv: String(merged.gemini.api_key_env || "GEMINI_API_KEY"),
-      includeScreenshot: merged.gemini.include_screenshot === true
+      apiKeyEnv: String(merged.gemini.api_key_env || "GEMINI_API_KEY")
     },
     request: { attempts, proxyUrl }
   };

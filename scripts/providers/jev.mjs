@@ -2,8 +2,10 @@
 // criteria) is fixed by the Jev schema; criteria values carry each candidate's
 // neighbourhood so Jev can judge locally.
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { neighborSummary } from "../board-analysis.mjs";
 import { DECISION_INSTRUCTIONS } from "../prompt.mjs";
+import { omittedImageData, screenshotLog } from "./screenshot.mjs";
 
 // Key precedence: YAML api_key > process env > Windows machine-scoped env.
 // A machine-scoped variable is not automatically inherited by a long-lived
@@ -23,7 +25,8 @@ export function resolveJevApiKey(configured) {
 export function createJevProvider({ endpoint, model, apiKey, postJson }) {
   return {
     name: "jev",
-    async choose({ board, candidates, knownMines, level, step }) {
+    screenshotMinDimension: 280,
+    async choose({ board, candidates, knownMines, level, step, screenshot = null }) {
       const candidateKeys = new Set(candidates.map((cell) => `${cell.x},${cell.y}`));
       // Shared decision prompt core — identical to every provider by design.
       const instructions = DECISION_INSTRUCTIONS;
@@ -31,13 +34,20 @@ export function createJevProvider({ endpoint, model, apiKey, postJson }) {
       // keys identify the choices; each value describes that candidate's immediate
       // neighbourhood so Jev can judge it without rescanning the whole board.
       const criteria = Object.fromEntries(candidates.map((cell) => [`${cell.x},${cell.y}`, neighborSummary(board, cell.x, cell.y, knownMines)]));
+      // Jev replaces the unique reference in state with its image asset.
+      // https://docs.typesafe.ai/images
+      const imageReference = screenshot ? randomUUID() : null;
       const requestPayload = {
         model,
         state: {
           level: level.name,
           step: step + 1,
+          ...(screenshot ? { board_image: imageReference } : {}),
           board: { width: board.width, height: board.height, mines: board.mines, flaggedCount: board.flaggedCount, remainingMines: board.mines - board.flaggedCount, rows: board.rows, notation: "#=covered, F=flagged, .=revealed zero, 1-8=adjacent mine count; rows go from y=0 downward and x=0 to the right" }
         },
+        ...(screenshot ? { assets: {
+          [imageReference]: { type: "image", format: "png", data_base64: screenshot.data }
+        } } : {}),
         questions: {
           reveal: {
             type: "choice",
@@ -48,7 +58,10 @@ export function createJevProvider({ endpoint, model, apiKey, postJson }) {
       };
       const requestStarted = performance.now();
       const response = await postJson(endpoint, {
-        headers: { authorization: `Bearer ${apiKey}` },
+        headers: {
+          authorization: `Bearer ${apiKey}`,
+          ...(screenshot ? { "TypeSafe-Danger-Zone-Images": "true" } : {})
+        },
         body: requestPayload
       });
       const requestMs = Math.round(performance.now() - requestStarted);
@@ -57,7 +70,14 @@ export function createJevProvider({ endpoint, model, apiKey, postJson }) {
       const choice = answer?.choice;
       if (!candidateKeys.has(choice)) throw new Error(`Jev 返回了非法候选：${choice}`);
       const [x, y] = choice.split(",").map(Number);
-      return { x, y, answer, usage: response.body.usage ?? null, model: response.body.model ?? model, request: requestPayload, response: response.body, requestMs };
+      const loggedRequest = screenshot ? {
+        ...requestPayload,
+        assets: { [imageReference]: { ...requestPayload.assets[imageReference], data_base64: omittedImageData(screenshot) } }
+      } : requestPayload;
+      return {
+        x, y, answer, usage: response.body.usage ?? null, model: response.body.model ?? model,
+        request: loggedRequest, ...screenshotLog(screenshot), response: response.body, requestMs
+      };
     }
   };
 }

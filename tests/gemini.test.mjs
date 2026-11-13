@@ -153,25 +153,26 @@ test("Gemini key resolution prefers YAML, then the selected env var, then GOOGLE
   assert.equal(resolveGeminiApiKey(null, "GEMINI_API_KEY", {}), null);
 });
 
-test("existing YAML files get Gemini defaults and explicit Gemini overrides survive normalization", (t) => {
+test("YAML defaults to Jev 1.14 and normalizes the shared screenshot switch", (t) => {
   const directory = mkdtempSync(join(tmpdir(), "minesweeper-config-"));
   const path = join(directory, "providers.yaml");
   t.after(() => { unlinkSync(path); rmdirSync(directory); });
-  writeFileSync(path, "default_provider: jev\njev:\n  model: jev-preview\n");
-  const legacy = loadLlmConfig(path);
-  assert.equal(legacy.defaultProvider, "jev");
-  assert.equal(legacy.jev.model, "jev-preview");
-  assert.deepEqual(legacy.gemini, {
+  writeFileSync(path, "default_provider: jev\n");
+  const defaults = loadLlmConfig(path);
+  assert.equal(defaults.defaultProvider, "jev");
+  assert.equal(defaults.jev.model, "jev-1.14.0");
+  assert.equal(defaults.includeScreenshot, false);
+  assert.deepEqual(defaults.gemini, {
     endpoint: "https://generativelanguage.googleapis.com/v1beta/decisions",
-    model: "gemini-decision-1", apiKey: null, apiKeyEnv: "GEMINI_API_KEY", includeScreenshot: false
+    model: "gemini-decision-1", apiKey: null, apiKeyEnv: "GEMINI_API_KEY"
   });
-  writeFileSync(path, "default_provider: gemini\ngemini:\n  endpoint: http://localhost:8090/decisions\n  api_key: yaml-key\n  api_key_env: CUSTOM_KEY\n  include_screenshot: true\n");
+  writeFileSync(path, "default_provider: gemini\ninclude_screenshot: true\ngemini:\n  endpoint: http://localhost:8090/decisions\n  api_key: yaml-key\n  api_key_env: CUSTOM_KEY\n");
   const configured = loadLlmConfig(path);
   assert.equal(configured.defaultProvider, "gemini");
   assert.equal(configured.gemini.endpoint, "http://localhost:8090/decisions");
   assert.equal(configured.gemini.model, "gemini-decision-1");
   assert.equal(configured.gemini.apiKey, "yaml-key");
   assert.equal(configured.gemini.apiKeyEnv, "CUSTOM_KEY");
-  assert.equal(configured.gemini.includeScreenshot, true);
+  assert.equal(configured.includeScreenshot, true);
   assert.ok(PROVIDER_NAMES.includes("gemini"));
 });

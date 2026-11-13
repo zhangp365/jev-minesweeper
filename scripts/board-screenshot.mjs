@@ -1,6 +1,6 @@
 // Self-contained so the runner can pass this function to Playwright CLI.
-export async function screenshotBoard(page) {
-  return page.evaluate(async () => {
+export async function screenshotBoard(page, { minDimension = 0 } = {}) {
+  return page.evaluate(async (minDimension) => {
     const table = document.getElementById("minesweeper_grid");
     const game = window.minesweeperGame;
     const rows = table ? Array.from(table.rows) : [];
@@ -40,10 +40,14 @@ export async function screenshotBoard(page) {
       images.set(url, image);
     }));
     const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    // Jev requires both sides to be at least 280 px. Use an integer scale
+    // so every original pixel stays sharp and no padding or cells are added.
+    const scale = Math.max(1, Math.ceil(minDimension / Math.min(width, height)));
+    canvas.width = width * scale;
+    canvas.height = height * scale;
     const context = canvas.getContext("2d");
     context.imageSmoothingEnabled = false;
+    context.scale(scale, scale);
     context.fillStyle = background;
     context.fillRect(0, 0, width, height);
     for (const tile of tiles) {
@@ -57,6 +61,6 @@ export async function screenshotBoard(page) {
       if (tile.image) context.drawImage(images.get(tile.image), x + tile.offsetX, y + tile.offsetY);
       context.restore();
     }
-    return { width, height, columns: game.width, rows: game.height, data: canvas.toDataURL("image/png").split(",")[1] };
-  });
+    return { width: canvas.width, height: canvas.height, columns: game.width, rows: game.height, data: canvas.toDataURL("image/png").split(",")[1] };
+  }, minDimension);
 }
